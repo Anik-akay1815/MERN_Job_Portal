@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { registerUser } from "../services/authService.js";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar.jsx";
+
 
 function RegisterUser() {
   const [formData, setFormData] = useState({
@@ -9,6 +10,7 @@ function RegisterUser() {
     email: "",
     password: "",
   });
+  const navigate = useNavigate();
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -19,7 +21,7 @@ function RegisterUser() {
     e.preventDefault();
     try {
       const res = await registerUser(formData);
-      console.log(res.data);
+      navigate("/login");
     } catch (err) {
       alert(err.response?.data?.message || "Something went wrong");
     }

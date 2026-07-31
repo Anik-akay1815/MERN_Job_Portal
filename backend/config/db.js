@@ -8,7 +8,7 @@ const connectDB = async () => {
     await mongoose.connect(DBPath);
     console.log("Mongoose Connected");
   } catch (err) {
-    console.log("Error while connecting:err");
+    console.log("Error while connecting:",err);
   }
 };
 

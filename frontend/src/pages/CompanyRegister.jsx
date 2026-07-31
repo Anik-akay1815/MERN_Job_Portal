@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { registerCompany } from "../services/authService";
-import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar.jsx";
 
 function RegisterCompany() {
@@ -23,7 +22,6 @@ function RegisterCompany() {
     e.preventDefault();
     try {
       const res = await registerCompany(formData);
-      console.log(res.data);
       navigate("/login");
     } catch (err) {
       alert(err.response?.data?.message || "Something went wrong");

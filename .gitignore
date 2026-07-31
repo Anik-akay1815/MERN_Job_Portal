@@ -3,6 +3,6 @@ node_modules/
 dist/
 build/
 
-frontend/nodez-modules/
-backend/nodez-modules/
+frontend/node-modules/
+backend/node-modules/
 backend/.env

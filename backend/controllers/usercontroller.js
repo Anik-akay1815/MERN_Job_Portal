@@ -20,6 +20,7 @@ exports.register = async (req, res, next) => {
       },
     });
   } catch (err) {
+    console.log(err);
     res.status(500).json({
       success: false,
       message: "Error while saving data",
