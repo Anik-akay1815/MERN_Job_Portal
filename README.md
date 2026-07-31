@@ -1,5 +1,8 @@
 # MERN Job Portal
 
+#Live Application Link
+-https://mern-job-portal-1s5tdc186-lexur.vercel.app/
+
 ## Tech Stack
 - React.js
 - Node.js
