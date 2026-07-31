@@ -1,0 +1,8 @@
+node_modules/
+.env
+dist/
+build/
+
+frontend/nodez-modules/
+backend/nodez-modules/
+backend/.env
