@@ -1,7 +1,6 @@
 import axios from "axios";
-import App from "../App";
 
-const API = axios.create({ baseURL: "https://mern-job-portal-j4by.onrender.com" });
+const API = axios.create({ baseURL: import.meta.env.VITE_API_URL });
 
 export const loginUser = (userData) => {
   return API.post("/user/login", userData);
