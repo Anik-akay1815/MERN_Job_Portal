@@ -12,6 +12,8 @@ function FeaturedJobs() {
   const fetchJobs = async () => {
     try {
       const res = await getAllJobs();
+      console.log(res.data);
+      console.log(res);
       setJobs(res.data.data);
     } catch (err) {
       console.log(err.response?.data || err.message);
