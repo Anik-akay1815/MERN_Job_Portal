@@ -20,6 +20,7 @@ app.use('/user',userRouter);
 app.use('/company',companyRouter);
 app.use('/job',jobRouter);
 app.use('/application',applicationRouter);
+app.use('/uploads', express.static('uploads'));
 
 app.get('/',(req,res)=>{
   res.send("Job Portal Running...");

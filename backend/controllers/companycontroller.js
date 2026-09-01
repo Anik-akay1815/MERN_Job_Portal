@@ -113,6 +113,9 @@ exports.updateCompany = async (req, res, next) => {
   } else {
     delete data.password;
   }
+  if (req.files?.logo) {
+    data.logo = req.files.logo[0].path;
+  }
   const updatedCompany = await Company.findByIdAndUpdate(id, data, {
     new: true,
     runValidators: true,

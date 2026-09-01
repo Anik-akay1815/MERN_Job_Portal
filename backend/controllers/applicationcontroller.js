@@ -110,17 +110,25 @@ exports.applyJob = async (req, res, next) => {
       user:userId,
       job:jobId,
     })
-    if(alreadyApplied){
-       return res.status(400).json({
-        success:false,
-        message:"Already Applied",
-      })
+    if (alreadyApplied) {
+      return res.status(400).json({
+        success: false,
+        message: "Already Applied",
+      });
+    }
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
     }
     const application = await Application.create({
-      user:userId,
-      job:jobId,
-      company:job.company,
-    })
+      user: userId,
+      job: jobId,
+      company: job.company,
+      resume: user.resume,
+    });
     res.status(201).json({
       success:true,
       message:"Applied Successfully",
@@ -152,7 +160,7 @@ exports.getJobApplications=async(req,res,next)=>{
     })
     }
     const applications= await Application.find({job:jobId})
-    .populate("user","name email role")
+    .populate("user","name email role resume")
     .populate("job",'title location')
     .populate("company","companyname email location");
     res.status(200).json({

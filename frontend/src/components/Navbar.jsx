@@ -45,6 +45,15 @@ function Navbar({ currentPage }) {
                   <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-slate-800 group-hover:w-full transition-all duration-300"></span>
                 </Link>
               )}
+              {role !== "company" && (
+                <Link
+                  to="/allcompany"
+                  className="hover:text-slate-800 transition-colors duration-200 relative group"
+                >
+                  Companies
+                  <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-slate-800 group-hover:w-full transition-all duration-300"></span>
+                </Link>
+              )}
             </div>
           </div>
 

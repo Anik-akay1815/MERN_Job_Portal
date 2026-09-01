@@ -24,10 +24,21 @@ export const getCompanyById = (id) => {
   return API.get(`/company/${id}`);
 };
 export const updateCompany = (id, formData) => {
-  return API.put(`/company/${id}`, formData);
+  const token = localStorage.getItem("token");
+  return API.put(`/company/${id}`, formData, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "multipart/form-data",
+    },
+  });
 };
 export const updateUser = (id, formData) => {
-  return API.put(`/user/${id}`, formData);
+  const token = localStorage.getItem("token");
+  return API.put(`/user/${id}`, formData, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 };
 export const createJob = (jobData) => {
   const token = localStorage.getItem("token");

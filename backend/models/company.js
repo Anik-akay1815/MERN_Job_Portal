@@ -22,6 +22,29 @@ const companySchema=mongoose.Schema({
     type:String,
     default:"",
   },
+  website:{
+    type:String,
+    default:"",
+    required:true,
+  },
+  industry:{
+    type:String,
+    default:"",
+    required:true,
+  },
+  companySize:{
+    type:String,
+    default:"",
+  },
+  logo:{
+    type:String,
+    default:"",
+  },
+  linkedin:{
+    type:String,
+    default:"",
+    required:true,
+  },
   role:{
     type:String,
     default:'company'

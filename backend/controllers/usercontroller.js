@@ -13,10 +13,16 @@ exports.register = async (req, res, next) => {
       success: true,
       message: "User registered successfully",
       data: {
-        _id:userdata._id,
-        name:userdata.name,
-        email:userdata.email,
-        role:userdata.role
+        _id: userdata._id,
+        name: userdata.name,
+        email: userdata.email,
+        role: userdata.role,
+        phone: userdata.phone,
+        location: userdata.location,
+        bio: userdata.bio,
+        skills: userdata.skills,
+        gitHub: userdata.gitHub,
+        experience: userdata.experience,
       },
     });
   } catch (err) {
@@ -30,39 +36,44 @@ exports.register = async (req, res, next) => {
 };
 exports.login = async (req, res, next) => {
   const { email, password } = req.body;
+
   const user = await User.findOne({ email });
+
   if (!user) {
     return res.status(404).json({
       success: false,
       message: "User does not exists",
     });
   }
-  const isMatch=await bcrypt.compare(password,user.password);
+
+  const isMatch = await bcrypt.compare(password, user.password);
+
   if (!isMatch) {
     return res.status(401).json({
       success: false,
       message: "Incorrect Credentials",
     });
   }
-  const token=jwt.sign({
-    id:user._id,
-    role:user.role
-  },
-  process.env.JWT_SECRET,
-  {
-    expiresIn:'7d'
-  }
-)
+
+  const token = jwt.sign(
+    {
+      id: user._id,
+      role: user.role
+    },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: "7d"
+    }
+  );
+
+  const userData = user.toObject();
+  delete userData.password;
+
   res.status(200).json({
     success: true,
     message: "Login successful",
     token,
-    data: {
-      _id:user._id,
-      name:user.name,
-      email:user.email,
-      role:user.role
-    },
+    data: userData,
   });
 };
 
@@ -107,14 +118,26 @@ exports.getbyID = async (req, res, next) => {
 
 exports.updateUser = async (req, res, next) => {
   const id = req.params.id;
-  const data = req.body;
+  const data = {...req.body};
 
-  if(data.password){
-    data.password=await bcrypt.hash(data.password,12);
+  if (data.password) {
+    data.password = await bcrypt.hash(data.password, 12);
+  }
+  if (req.files?.resume) {
+    data.resume = req.files.resume[0].path;
+  }
+  if (req.files?.profilePhoto) {
+    data.profilePhoto = req.files.profilePhoto[0].path;
+  }
+  if (data.skills) {
+    data.skills = JSON.parse(data.skills);
+  }
+  if (data.experience) {
+    data.experience = JSON.parse(data.experience);
   }
   const updatedUser = await User.findByIdAndUpdate(id, data, {
     new: true,
-    runValidators:true,
+    runValidators: true,
   });
   if (!updatedUser) {
     return res.status(404).json({

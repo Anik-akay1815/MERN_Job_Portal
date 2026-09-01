@@ -1,26 +1,30 @@
 const mongoose = require('mongoose');
 
-const applicationSchema=mongoose.Schema({
-  user:{
+const applicationSchema = mongoose.Schema({
+  user: {
     type: mongoose.Schema.Types.ObjectId,
-    ref:"User",
-    required:true
+    ref: "User",
+    required: true,
   },
-  company:{
+  company: {
     type: mongoose.Schema.Types.ObjectId,
-    ref:"Company",
-    required:true
+    ref: "Company",
+    required: true,
   },
-  job:{
+  job: {
     type: mongoose.Schema.Types.ObjectId,
-    ref:"Job",
-    required:true
+    ref: "Job",
+    required: true,
   },
-  status:{
-    type:String,
-    enum:["Pending","Accepted","Rejected"],
-    default:"Pending"
-  }
-})
+  resume: {
+    type: String,
+    default: "",
+  },
+  status: {
+    type: String,
+    enum: ["Pending", "Accepted", "Rejected"],
+    default: "Pending",
+  },
+});
 
 module.exports=mongoose.model('Application',applicationSchema);

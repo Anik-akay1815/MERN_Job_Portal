@@ -86,6 +86,16 @@ function Applicants() {
                     {app.job?.title}
                   </span>
                 </p>
+                {app.user?.resume && (
+                  <a
+                    href={`http://localhost:19116/${app.user.resume}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block mt-4 text-emerald-600 font-semibold hover:underline"
+                  >
+                    📄 View Resume
+                  </a>
+                )}
 
                 <div className="mt-5 flex gap-3">
                   <button

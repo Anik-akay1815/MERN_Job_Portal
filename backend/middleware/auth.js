@@ -6,7 +6,7 @@ exports.verifyToken=async(req,res,next)=>{
     if(!authHeader){
       return res.status(401).json({
         success:false,
-        message:'Token not found'
+        message:'Token not found',
       })
     }
     const token = authHeader.split(' ')[1];
