@@ -241,7 +241,7 @@ function RegisterCompany() {
                   to="/register"
                   className="text-emerald-600 hover:text-emerald-700 font-semibold"
                 >
-                  Register as user
+                  Register as Candidate
                 </Link>
               </p>
 

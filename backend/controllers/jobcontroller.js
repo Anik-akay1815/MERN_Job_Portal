@@ -60,10 +60,17 @@ exports.getJobByID = async (req, res, next) => {
 };
 
 exports.updateJob = async (req, res, next) => {
-  const id = req.params.id;
-  const data = req.body;
-  const updatedJob = await Job.findByIdAndUpdate(id, data, { new: true });
   try {
+    const id = req.params.id;
+    const data = req.body;
+    const updatedJob = await Job.findByIdAndUpdate(
+      id,
+      data,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
     if (!updatedJob) {
       return res.status(404).json({
         success: false,
@@ -78,7 +85,8 @@ exports.updateJob = async (req, res, next) => {
   } catch (err) {
     res.status(500).json({
       success: false,
-      message: "Error Finding Job",
+      message: "Error updating Job",
+      err: err.message,
     });
   }
 };

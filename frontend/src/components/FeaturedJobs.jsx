@@ -36,12 +36,18 @@ function FeaturedJobs() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           {jobs.slice(0, 3).map((job) => (
             <JobCard
-              jobId={job._id}
               key={job._id}
+              jobId={job._id}
               title={job.title}
               company={job.company?.companyname}
               location={job.location}
               salary={job.salary}
+              jobType={job.jobType}
+              experienceLevel={job.experienceLevel}
+              skillsRequired={job.skillsRequired}
+              category={job.category}
+              numberOfOpenings={job.numberOfOpenings}
+              applicationDeadline={job.applicationDeadline}
             />
           ))}
         </div>
