@@ -22,16 +22,58 @@ exports.createJob = async (req, res, next) => {
 
 exports.getallJobs = async (req, res, next) => {
   try {
-    const allJobs = await Job.find().populate('company','companyname');
+    const {keyword, location, jobType, experienceLevel, category, skills,} = req.query;
+    let query = {};
+
+    if (keyword) {
+      query.$or = [
+        { title: { $regex: keyword, $options: "i" } },
+        { description: { $regex: keyword, $options: "i" } },
+        { skillsRequired: { $regex: keyword, $options: "i" } },
+      ];
+    }
+    if (location) {
+      query.location = {
+        $regex: location,
+        $options: "i",
+      };
+    }
+    if (jobType) {
+      query.jobType = jobType;
+    }
+    if (experienceLevel) {
+      query.experienceLevel = experienceLevel;
+    }
+    if (category) {
+      query.category = {
+        $regex: category,
+        $options: "i",
+      };
+    }
+    if (skills) {
+      const skillList = skills
+        .split(",")
+        .map((skill) => skill.trim())
+        .filter(Boolean);
+      if (skillList.length > 0) {
+        query.skillsRequired = {
+          $in: skillList,
+        };
+      }
+    }
+    const allJobs = await Job.find(query)
+      .populate("company", "companyname");
+
     res.status(200).json({
       success: true,
-      message: "All registered Jobs",
+      message: "Jobs fetched successfully",
       data: allJobs,
     });
   } catch (err) {
     res.status(500).json({
       success: false,
       message: "Error fetching Jobs",
+      error: err.message,
     });
   }
 };

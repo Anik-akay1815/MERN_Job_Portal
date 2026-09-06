@@ -24,8 +24,13 @@ export const loginCompany = (companyData) => {
 export const registerCompany = (companyData) => {
   return API.post("/company/register", companyData);
 };
-export const getAllJobs = () => {
-  return API.get("/job/all");
+export const getAllJobs = (filters = {}) => {
+  return API.get("/job/all", {
+    params: filters,
+    paramsSerializer: (params) => {
+      return new URLSearchParams(params).toString();
+    },
+  });
 };
 export const getJobById = (id) => {
   return API.get(`/job/${id}`);

@@ -1,21 +1,104 @@
 import Navbar from "../components/Navbar.jsx";
 import JobCard from "../components/JobCard.jsx";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import { getAllJobs } from "../services/authService.js";
 
 function Jobs() {
+  const [searchParams] = useSearchParams();
   const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
+  const [sortBy, setSortBy] = useState("");
+  const panelRef = useRef(null);
+
+  const [filters, setFilters] = useState({
+    keyword: searchParams.get("keyword") || "",
+    location: searchParams.get("location") || "",
+    jobType: "",
+    experienceLevel: "",
+  });
+
   useEffect(() => {
-    fetchJobs();
+    fetchJobs(filters);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const fetchJobs = async () => {
+
+  // Close the filter popover when clicking outside of it
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (panelRef.current && !panelRef.current.contains(e.target)) {
+        setShowFilters(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const fetchJobs = async (appliedFilters) => {
+    setLoading(true);
     try {
-      const res = await getAllJobs();
+      const cleanFilters = Object.fromEntries(
+        Object.entries(appliedFilters).filter(([, v]) => v && v.trim() !== "")
+      );
+      const res = await getAllJobs(cleanFilters);
       setJobs(res.data.data);
     } catch (err) {
       alert(err.response?.data?.message || "Something went wrong");
+    } finally {
+      setLoading(false);
     }
   };
+
+  const handleFilterChange = (e) => {
+    setFilters({ ...filters, [e.target.name]: e.target.value });
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    fetchJobs(filters);
+  };
+
+  const handleApplyFilters = () => {
+    fetchJobs(filters);
+    setShowFilters(false);
+  };
+
+  const handleReset = () => {
+    const resetFilters = {
+      keyword: "",
+      location: "",
+      jobType: "",
+      experienceLevel: "",
+    };
+    setFilters(resetFilters);
+    setSortBy("");
+    fetchJobs(resetFilters);
+    setShowFilters(false);
+  };
+
+  // Extract a numeric value from strings like "12 LPA" for client-side sorting
+  const extractSalaryNumber = (salaryStr) => {
+    const match = salaryStr?.match(/[\d.]+/);
+    return match ? parseFloat(match[0]) : 0;
+  };
+
+  const sortedJobs = [...jobs].sort((a, b) => {
+    if (sortBy === "salary-desc") {
+      return extractSalaryNumber(b.salary) - extractSalaryNumber(a.salary);
+    }
+    if (sortBy === "salary-asc") {
+      return extractSalaryNumber(a.salary) - extractSalaryNumber(b.salary);
+    }
+    return 0;
+  });
+
+  const activeFilterCount = [
+    filters.jobType,
+    filters.experienceLevel,
+    sortBy,
+  ].filter(Boolean).length;
+
   return (
     <>
       <Navbar />
@@ -29,34 +112,141 @@ function Jobs() {
           </p>
         </div>
 
-        {/* Search bar */}
-        <div className="bg-white shadow-lg rounded-2xl p-5 flex flex-col sm:flex-row gap-3 mb-10 border border-gray-100">
-          <input
-            type="text"
-            placeholder="🔍 Search Jobs"
-            className="flex-1 border border-gray-300 px-4 py-3 bg-gray-50 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300"
-          />
-          <input
-            type="text"
-            placeholder="📍 Location"
-            className="flex-1 border border-gray-300 px-4 py-3 bg-gray-50 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300"
-          />
-          <button className="bg-emerald-500 text-white px-8 py-3 rounded-xl hover:bg-emerald-600 font-semibold transition-all duration-300 shadow-md hover:shadow-lg">
+        {/* Compact Search Bar */}
+        <form
+          onSubmit={handleSearch}
+          className="flex items-center gap-2 mb-8 relative"
+        >
+          <div className="flex-1 relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+              🔍
+            </span>
+            <input
+              type="text"
+              name="keyword"
+              value={filters.keyword}
+              onChange={handleFilterChange}
+              placeholder="Search Jobs"
+              className="w-full border border-gray-300 pl-9 pr-3 py-2.5 bg-gray-50 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 text-sm"
+            />
+          </div>
+
+          <div className="flex-1 relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+              📍
+            </span>
+            <input
+              type="text"
+              name="location"
+              value={filters.location}
+              onChange={handleFilterChange}
+              placeholder="Location"
+              className="w-full border border-gray-300 pl-9 pr-3 py-2.5 bg-gray-50 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 text-sm"
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="bg-emerald-500 text-white px-6 py-2.5 rounded-xl hover:bg-emerald-600 font-semibold transition-all duration-300 shadow-sm hover:shadow-md text-sm whitespace-nowrap"
+          >
             Search
           </button>
-        </div>
+
+          {/* Filter icon button + popover */}
+          <div className="relative" ref={panelRef}>
+            <button
+              type="button"
+              onClick={() => setShowFilters(!showFilters)}
+              className={`relative w-10 h-10 flex items-center justify-center rounded-xl border transition-all duration-300 ${
+                showFilters
+                  ? "bg-slate-700 border-slate-700 text-white"
+                  : "bg-white border-gray-300 text-gray-600 hover:bg-gray-50"
+              }`}
+              title="Filters"
+            >
+              <span className="text-base">✎</span>
+              {activeFilterCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-emerald-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                  {activeFilterCount}
+                </span>
+              )}
+            </button>
+
+            {showFilters && (
+              <div className="absolute right-0 top-full mt-2 w-72 bg-white shadow-xl rounded-xl border border-gray-200 p-4 z-20">
+                <div className="space-y-3">
+                  <select
+                    name="jobType"
+                    value={filters.jobType}
+                    onChange={handleFilterChange}
+                    className="w-full border border-gray-300 px-3 py-2 bg-gray-50 rounded-lg outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm"
+                  >
+                    <option value="">Job Type (Any)</option>
+                    <option value="Full Time">Full Time</option>
+                    <option value="Part Time">Part Time</option>
+                    <option value="Intern">Intern</option>
+                    <option value="Remote">Remote</option>
+                  </select>
+
+                  <select
+                    name="experienceLevel"
+                    value={filters.experienceLevel}
+                    onChange={handleFilterChange}
+                    className="w-full border border-gray-300 px-3 py-2 bg-gray-50 rounded-lg outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm"
+                  >
+                    <option value="">Experience (Any)</option>
+                    <option value="Fresher">Fresher</option>
+                    <option value="0-1 years">0-1 years</option>
+                    <option value="1-3 years">1-3 years</option>
+                    <option value="3-5 years">3-5 years</option>
+                    <option value="5+ years">5+ years</option>
+                  </select>
+
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="w-full border border-gray-300 px-3 py-2 bg-gray-50 rounded-lg outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm"
+                  >
+                    <option value="">Sort by Salary</option>
+                    <option value="salary-desc">Highest to Lowest</option>
+                    <option value="salary-asc">Lowest to Highest</option>
+                  </select>
+                </div>
+
+                <div className="flex gap-2 mt-4">
+                  <button
+                    type="button"
+                    onClick={handleReset}
+                    className="flex-1 border border-gray-300 text-gray-600 py-2 rounded-lg hover:bg-gray-50 font-semibold transition-all duration-300 text-xs"
+                  >
+                    Reset
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleApplyFilters}
+                    className="flex-1 bg-slate-700 text-white py-2 rounded-lg hover:bg-slate-800 font-semibold transition-all duration-300 text-xs"
+                  >
+                    Apply
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </form>
 
         {/* Job count */}
-        <p className="text-gray-500 mb-4">{jobs.length} jobs found</p>
+        <p className="text-gray-500 mb-4">
+          {loading ? "Searching..." : `${sortedJobs.length} jobs found`}
+        </p>
 
         {/* Job grid */}
-        {jobs.length === 0 ? (
+        {!loading && sortedJobs.length === 0 ? (
           <p className="text-gray-500 text-center bg-gray-50 rounded-xl py-10">
             No jobs found
           </p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {jobs.map((job) => (
+            {sortedJobs.map((job) => (
               <JobCard
                 key={job._id}
                 jobId={job._id}
