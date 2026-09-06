@@ -6,6 +6,7 @@ const userRouter = require('./routes/userRouter');
 const companyRouter = require('./routes/companyRouter');
 const jobRouter=require('./routes/jobrouter');
 const applicationRouter = require("./routes/applicationRouter");
+const adminRouter = require('./routes/adminRouter');
 const cors = require('cors');
 
 
@@ -20,6 +21,7 @@ app.use('/user',userRouter);
 app.use('/company',companyRouter);
 app.use('/job',jobRouter);
 app.use('/application',applicationRouter);
+app.use('/admin', adminRouter)
 app.use('/uploads', express.static('uploads'));
 
 app.get('/',(req,res)=>{

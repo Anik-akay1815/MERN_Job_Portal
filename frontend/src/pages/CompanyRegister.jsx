@@ -85,7 +85,7 @@ function RegisterCompany() {
                   ✓
                 </span>
                 <p className="text-sm text-slate-300">
-                  Manage applicants from one dashboard
+                  Manage applicants from one Dashboard
                 </p>
               </div>
             </div>

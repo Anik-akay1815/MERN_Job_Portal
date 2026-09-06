@@ -2,18 +2,16 @@ import { Link, useNavigate } from "react-router-dom";
 
 function Navbar({ currentPage }) {
   const navigate = useNavigate();
-
   const token = localStorage.getItem("token");
   const user = JSON.parse(localStorage.getItem("user"));
-
   const isLoggedIn = !!token;
   const role = user?.role;
-
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     navigate("/");
   };
+
   return (
     <>
       <header className="bg-white shadow-md sticky top-0 z-50 border-b border-gray-100">
@@ -23,11 +21,11 @@ function Navbar({ currentPage }) {
               <span className="w-9 h-9 bg-slate-800 rounded-lg flex items-center justify-center text-white font-bold text-lg">
                 J
               </span>
+
               <h1 className="text-xl font-bold text-gray-900">
                 Job<span className="text-slate-700">Portal</span>
               </h1>
             </Link>
-
             <div className="hidden md:flex gap-8 text-gray-600 font-medium">
               <Link
                 to="/"
@@ -36,7 +34,7 @@ function Navbar({ currentPage }) {
                 Home
                 <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-slate-800 group-hover:w-full transition-all duration-300"></span>
               </Link>
-              {role !== "company" && (
+              {role !== "company" && role !== "admin" && (
                 <Link
                   to="/jobs"
                   className="hover:text-slate-800 transition-colors duration-200 relative group"
@@ -45,7 +43,7 @@ function Navbar({ currentPage }) {
                   <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-slate-800 group-hover:w-full transition-all duration-300"></span>
                 </Link>
               )}
-              {role !== "company" && (
+              {role !== "company" && role !== "admin" && (
                 <Link
                   to="/allcompany"
                   className="hover:text-slate-800 transition-colors duration-200 relative group"
@@ -56,7 +54,6 @@ function Navbar({ currentPage }) {
               )}
             </div>
           </div>
-
           <div className="flex items-center gap-6 text-gray-600 font-medium">
             {!isLoggedIn && currentPage !== "login" && (
               <Link
@@ -74,9 +71,15 @@ function Navbar({ currentPage }) {
                 Register
               </Link>
             )}
-
             {isLoggedIn && role === "user" && (
               <>
+                <Link
+                  to="/userdashboard"
+                  className="hover:text-slate-800 transition-colors duration-200 relative group"
+                >
+                  Dashboard
+                  <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-slate-800 group-hover:w-full transition-all duration-300"></span>
+                </Link>
                 <Link
                   to="/myapplications"
                   className="hover:text-slate-800 transition-colors duration-200"
@@ -98,11 +101,10 @@ function Navbar({ currentPage }) {
                 </Link>
               </>
             )}
-
             {isLoggedIn && role === "company" && (
               <>
                 <Link
-                  to="/dashboard"
+                  to="/Dashboard"
                   className="hover:text-slate-800 transition-colors duration-200"
                 >
                   Dashboard
@@ -121,6 +123,29 @@ function Navbar({ currentPage }) {
                 </Link>
                 <Link
                   to="/companyprofile"
+                  className="hover:text-slate-800 transition-colors duration-200"
+                >
+                  Profile
+                </Link>
+                <Link
+                  to="/"
+                  onClick={handleLogout}
+                  className="text-red-500 hover:text-red-600 font-semibold border border-red-200 hover:bg-red-50 px-4 py-1.5 rounded-lg transition-all duration-200"
+                >
+                  Logout
+                </Link>
+              </>
+            )}
+            {isLoggedIn && role === "admin" && (
+              <>
+                <Link
+                  to="/admin"
+                  className="hover:text-slate-800 transition-colors duration-200"
+                >
+                  Admin Dashboard
+                </Link>
+                <Link
+                  to="/userprofile"
                   className="hover:text-slate-800 transition-colors duration-200"
                 >
                   Profile

@@ -1,24 +1,19 @@
-import { useParams } from "react-router-dom";
+import { useParams, useLocation, Link } from "react-router-dom";
 import Navbar from "../components/Navbar.jsx";
 import { getCompanyById, updateCompany } from "../services/authService.js";
 import { useEffect, useState, useRef } from "react";
-import { Link } from "react-router-dom";
 
 function CompanyProfile() {
   const { id } = useParams();
+  const location = useLocation();
   const [company, setCompany] = useState(null);
   const [jobs, setJobs] = useState([]);
 
   const [editMode, setEditMode] = useState(false);
   const [logoFile, setLogoFile] = useState(null);
   const [logoPreview, setLogoPreview] = useState(null);
+  const [showFullDescription, setShowFullDescription] = useState(false);
   const fileInputRef = useRef(null);
-
-  // NEW: about section expand/collapse
-  const [aboutExpanded, setAboutExpanded] = useState(false);
-
-  // NEW: logo modal (view full image)
-  const [showLogoModal, setShowLogoModal] = useState(false);
 
   const [formData, setFormData] = useState({
     companyname: "",
@@ -71,6 +66,17 @@ function CompanyProfile() {
       });
     }
   }, [company]);
+
+  // Auto-scroll to the Posted Jobs section when arriving via a #jobs link
+  useEffect(() => {
+    if (location.hash === "#jobs" && jobs.length > 0) {
+      const el = document.getElementById("jobs");
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+  }, [location.hash, jobs]);
+
   const fetchCompany = async (companyId = id) => {
     try {
       const res = await getCompanyById(companyId);
@@ -113,14 +119,20 @@ function CompanyProfile() {
   }
 
   const fileBaseUrl = import.meta.env.VITE_API_URL;
-  const logoSrc = logoPreview || (company?.logo ? `${fileBaseUrl}/${company.logo}` : null);
 
-  // NEW: clicking the avatar — editMode opens file picker, otherwise opens preview modal
+  const DESCRIPTION_LIMIT = 120;
+  const descriptionText = company?.description || "";
+  const isDescriptionLong = descriptionText.length > DESCRIPTION_LIMIT;
+  const displayedDescription =
+    isDescriptionLong && !showFullDescription
+      ? descriptionText.slice(0, DESCRIPTION_LIMIT) + "..."
+      : descriptionText;
+
   const handleLogoClick = () => {
     if (editMode) {
       fileInputRef.current.click();
-    } else if (logoSrc) {
-      setShowLogoModal(true);
+    } else if (company?.logo) {
+      window.open(`${fileBaseUrl}/${company.logo}`, "_blank");
     }
   };
 
@@ -132,13 +144,13 @@ function CompanyProfile() {
           <div className="flex flex-col items-center text-center mb-5 pb-5 border-b border-gray-200">
             <div
               className={`relative w-16 h-16 mb-2 ${
-                editMode || logoSrc ? "cursor-pointer group" : ""
+                editMode || company?.logo ? "cursor-pointer group" : ""
               }`}
               onClick={handleLogoClick}
             >
-              {logoSrc ? (
+              {logoPreview || company?.logo ? (
                 <img
-                  src={logoSrc}
+                  src={logoPreview || `${fileBaseUrl}/${company.logo}`}
                   alt="Logo"
                   className="w-16 h-16 rounded-full object-cover shadow-md"
                 />
@@ -148,10 +160,10 @@ function CompanyProfile() {
                 </div>
               )}
 
-              {(editMode || logoSrc) && (
+              {editMode && (
                 <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                   <span className="text-white text-xs font-semibold">
-                    {editMode ? "Change" : "View"}
+                    Change
                   </span>
                 </div>
               )}
@@ -183,27 +195,25 @@ function CompanyProfile() {
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
-                rows={2}
+                rows={4}
                 placeholder="About the company"
                 className="w-full mt-2 text-sm text-gray-700 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
               />
             ) : (
-              company?.description && (
-                <div className="w-full mt-1 max-w-md">
-                  <p
-                    className={`text-sm text-gray-600 whitespace-pre-line ${
-                      aboutExpanded ? "" : "line-clamp-2"
-                    }`}
-                  >
-                    {company.description}
+              descriptionText && (
+                <div className="mt-1 max-w-md">
+                  <p className="text-sm text-gray-600">
+                    {displayedDescription}
                   </p>
-                  {company.description.length > 100 && (
+                  {isDescriptionLong && (
                     <button
                       type="button"
-                      onClick={() => setAboutExpanded(!aboutExpanded)}
-                      className="text-emerald-600 text-xs font-semibold mt-1 hover:underline"
+                      onClick={() =>
+                        setShowFullDescription(!showFullDescription)
+                      }
+                      className="mt-1 text-emerald-600 text-xs font-semibold hover:underline"
                     >
-                      {aboutExpanded ? "Read less" : "Read more"}
+                      {showFullDescription ? "Show less" : "Read more"}
                     </button>
                   )}
                 </div>
@@ -378,7 +388,7 @@ function CompanyProfile() {
             )}
           </form>
 
-          <div>
+          <div id="jobs" className="scroll-mt-24">
             <h2 className="text-xl font-bold text-gray-900 mb-3">
               Posted Jobs
             </h2>
@@ -415,31 +425,6 @@ function CompanyProfile() {
           )}
         </div>
       </div>
-
-      {/* NEW: Logo preview modal */}
-      {showLogoModal && logoSrc && (
-        <div
-          className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4"
-          onClick={() => setShowLogoModal(false)}
-        >
-          <div
-            className="relative max-w-md w-full"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setShowLogoModal(false)}
-              className="absolute -top-10 right-0 text-white text-2xl font-bold"
-            >
-              ✕
-            </button>
-            <img
-              src={logoSrc}
-              alt="Company Logo"
-              className="w-full max-h-[80vh] object-contain rounded-lg shadow-xl bg-white"
-            />
-          </div>
-        </div>
-      )}
     </>
   );
 }

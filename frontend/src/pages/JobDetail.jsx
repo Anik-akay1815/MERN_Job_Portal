@@ -6,6 +6,8 @@ import { getJobById, applyJob } from "../services/authService";
 function JobDetail() {
   const { id } = useParams();
   const [job, setJob] = useState(null);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [notice, setNotice] = useState(null); // { title, message }
 
   useEffect(() => {
     fetchJob();
@@ -20,12 +22,45 @@ function JobDetail() {
     }
   };
 
+  const handleApplyClick = () => {
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user"));
+
+    if (!token) {
+      setNotice({
+        title: "Login Required",
+        message: "You have to login first to apply for this job.",
+      });
+      return;
+    }
+    if (user?.role !== "user") {
+      setNotice({
+        title: "Action Not Allowed",
+        message: "Companies cannot apply for jobs. Please log in with a candidate account.",
+      });
+      return;
+    }
+    setShowConfirm(true);
+  };
+
   const handleApply = async () => {
+    setShowConfirm(false);
     try {
       const res = await applyJob(job._id);
-      alert(res.data.message);
+      setNotice({ title: "Success", message: res.data.message });
     } catch (err) {
-      alert(err.response?.data?.message || "Something went wrong");
+      const msg = err.response?.data?.message;
+      if (msg === "Already Applied") {
+        setNotice({
+          title: "Already Applied",
+          message: "You have already applied for this job.",
+        });
+      } else {
+        setNotice({
+          title: "Unable to Apply",
+          message: msg || "Something went wrong",
+        });
+      }
     }
   };
 
@@ -60,7 +95,7 @@ function JobDetail() {
           </div>
 
           {/* Job Basic Details */}
-          <div className="flex flex-wrap gap-3 mb-8">
+          <div className="flex flex-wrap gap-3 mb-6">
             {/* Location */}
             {job.location && (
               <span className="bg-slate-50 text-slate-700 border border-slate-200 px-4 py-2 rounded-full text-sm font-semibold">
@@ -97,6 +132,16 @@ function JobDetail() {
             )}
           </div>
 
+          {/* Apply Button (kept near the top so applying doesn't need scrolling past the description) */}
+          <div className="mb-8 pb-8 border-b border-gray-200">
+            <button
+              className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 transition-all duration-300 text-white font-semibold px-8 py-3 rounded-xl shadow-md hover:shadow-lg hover:-translate-y-0.5"
+              onClick={handleApplyClick}
+            >
+              Apply Now
+            </button>
+          </div>
+
           {/* Job Description */}
           <div className="mb-8">
             <h2 className="text-xl font-bold text-gray-900 mb-3">
@@ -129,7 +174,7 @@ function JobDetail() {
           )}
 
           {/* Job Information */}
-          <div className="mb-8">
+          <div>
             <h2 className="text-xl font-bold text-gray-900 mb-4">
               Job Information
             </h2>
@@ -176,16 +221,91 @@ function JobDetail() {
               )}
             </div>
           </div>
-
-          {/* Apply Button */}
-          <button
-            className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 transition-all duration-300 text-white font-semibold px-8 py-3 rounded-xl shadow-md hover:shadow-lg hover:-translate-y-0.5"
-            onClick={handleApply}
-          >
-            Apply Now
-          </button>
         </div>
       </div>
+
+      {/* Confirm Apply Modal */}
+      {showConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full">
+            <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center text-2xl mx-auto mb-4">
+              📄
+            </div>
+            <h3 className="text-lg font-bold text-gray-900 text-center mb-2">
+              Apply to this job?
+            </h3>
+            <p className="text-sm text-gray-500 text-center mb-6">
+              Are you sure you want to apply for{" "}
+              <span className="font-semibold text-gray-700">{job.title}</span>{" "}
+              at{" "}
+              <span className="font-semibold text-gray-700">
+                {job.company.companyname}
+              </span>
+              ?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleApply}
+                className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 rounded-lg transition-colors"
+              >
+                Yes, Apply
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Notice Modal (login required / access denied / already applied / error / success) */}
+      {notice && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full">
+            <div
+              className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl mx-auto mb-4 ${
+                notice.title === "Success"
+                  ? "bg-emerald-50 text-emerald-500"
+                  : "bg-red-50 text-red-500"
+              }`}
+            >
+              {notice.title === "Success" ? "✅" : "⚠️"}
+            </div>
+            <h3 className="text-lg font-bold text-gray-900 text-center mb-2">
+              {notice.title}
+            </h3>
+            <p className="text-sm text-gray-500 text-center mb-6">
+              {notice.message}
+            </p>
+            {notice.title === "Login Required" ? (
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setNotice(null)}
+                  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+                <Link
+                  to="/login"
+                  className="flex-1 text-center bg-slate-700 hover:bg-slate-800 text-white font-semibold py-2 rounded-lg transition-colors"
+                >
+                  Login
+                </Link>
+              </div>
+            ) : (
+              <button
+                onClick={() => setNotice(null)}
+                className="w-full bg-slate-700 hover:bg-slate-800 text-white font-semibold py-2 rounded-lg transition-colors"
+              >
+                OK
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </>
   );
 }

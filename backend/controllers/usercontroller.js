@@ -45,7 +45,6 @@ exports.login = async (req, res, next) => {
       message: "User does not exists",
     });
   }
-
   const isMatch = await bcrypt.compare(password, user.password);
 
   if (!isMatch) {
@@ -79,7 +78,7 @@ exports.login = async (req, res, next) => {
 
 exports.getallusers = async (req, res, next) => {
   try {
-    const allUsers = await User.find();
+    const allUsers = await User.find().select("-password");;
     res.status(200).json({
       success: true,
       message: "All registered users",
@@ -96,7 +95,7 @@ exports.getallusers = async (req, res, next) => {
 exports.getbyID = async (req, res, next) => {
   try {
     const id = req.params.id;
-    const user = await User.findById(id);
+    const user = await User.findById(id).select("-password");;
     if (!user) {
       return res.status(404).json({
         success: false,

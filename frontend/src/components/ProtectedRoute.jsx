@@ -5,8 +5,11 @@ import {Navigate} from 'react-router-dom';
   if(!token){
     return <Navigate to='/login' replace/>
   }
-  if(allowedRole &&user?.role!==allowedRole){
-    return <Navigate to='/' replace/>
+  if(allowedRole){
+    const rolesAllowed = Array.isArray(allowedRole) ? allowedRole : [allowedRole];
+    if(!rolesAllowed.includes(user?.role)){
+      return <Navigate to='/' replace/>
+    }
   }
   return children;
  }

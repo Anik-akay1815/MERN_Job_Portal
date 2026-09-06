@@ -1,12 +1,22 @@
 import axios from "axios";
 
 const API = axios.create({ baseURL: import.meta.env.VITE_API_URL });
+API.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 export const loginUser = (userData) => {
   return API.post("/user/login", userData);
 };
 export const registerUser = (userData) => {
   return API.post("/user/register", userData);
+};
+export const getMyApplications = (userId) => {
+  return API.get(`/application/user/${userId}`);
 };
 export const loginCompany = (companyData) => {
   return API.post("/company/login", companyData);
@@ -22,6 +32,9 @@ export const getJobById = (id) => {
 };
 export const getCompanyById = (id) => {
   return API.get(`/company/${id}`);
+};
+export const getAllCompanies = () => {
+  return API.get("/company/all");
 };
 export const updateCompany = (id, formData) => {
   const token = localStorage.getItem("token");
@@ -118,11 +131,34 @@ export const deleteApplication = (id) => {
 };
 export const getDashboard = () => {
   const token = localStorage.getItem("token");
-  return API.get('/job/dashboard', {
+  return API.get('/job/Dashboard', {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   });
+};
+export const getAllUsersAdmin = () => {
+  return API.get("/admin/users");
+};
+
+export const deleteUserAdmin = (id) => {
+  return API.delete(`/admin/users/${id}`);
+};
+
+export const getAllCompaniesAdmin = () => {
+  return API.get("/admin/companies");
+};
+
+export const deleteCompanyAdmin = (id) => {
+  return API.delete(`/admin/companies/${id}`);
+};
+
+export const getAllJobsAdmin = () => {
+  return API.get("/admin/jobs");
+};
+
+export const deleteJobAdmin = (id) => {
+  return API.delete(`/admin/jobs/${id}`);
 };
 
 export default API;

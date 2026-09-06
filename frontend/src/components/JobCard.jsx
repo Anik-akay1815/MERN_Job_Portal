@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { applyJob } from "../services/authService";
 
@@ -14,16 +15,48 @@ function JobCard({
   numberOfOpenings,
   applicationDeadline,
 }) {
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [notice, setNotice] = useState(null); // { title, message }
+
+  const handleApplyClick = () => {
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user"));
+
+    if (!token) {
+      setNotice({
+        title: "Login Required",
+        message: "You have to login first to apply for this job.",
+      });
+      return;
+    }
+    if (user?.role !== "user") {
+      setNotice({
+        title: "Action Not Allowed",
+        message: "Companies cannot apply for jobs. Please log in with a candidate account.",
+      });
+      return;
+    }
+    setShowConfirm(true);
+  };
+
   const handleApply = async () => {
+    setShowConfirm(false);
     try {
       const res = await applyJob(jobId);
-      alert(res.data.message);
+      setNotice({ title: "Success", message: res.data.message });
     } catch (err) {
-      console.log(err);
-      console.log(err.response);
-      console.log(err.response?.data);
-
-      alert(err.response?.data?.message || "Something went wrong");
+      const msg = err.response?.data?.message;
+      if (msg === "Already Applied") {
+        setNotice({
+          title: "Already Applied",
+          message: "You have already applied for this job.",
+        });
+      } else {
+        setNotice({
+          title: "Unable to Apply",
+          message: msg || "Something went wrong",
+        });
+      }
     }
   };
 
@@ -149,7 +182,7 @@ function JobCard({
               ? "bg-gray-300 text-gray-500 cursor-not-allowed"
               : "bg-emerald-500 text-white hover:bg-emerald-600 hover:shadow-md"
           }`}
-          onClick={handleApply}
+          onClick={handleApplyClick}
           disabled={isExpired}
         >
           {isExpired ? "Applications Closed" : "Apply Now"}
@@ -163,6 +196,85 @@ function JobCard({
           View Details →
         </Link>
       </div>
+
+      {/* Confirm Apply Modal */}
+      {showConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full">
+            <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center text-2xl mx-auto mb-4">
+              📄
+            </div>
+            <h3 className="text-lg font-bold text-gray-900 text-center mb-2">
+              Apply to this job?
+            </h3>
+            <p className="text-sm text-gray-500 text-center mb-6">
+              Are you sure you want to apply for{" "}
+              <span className="font-semibold text-gray-700">{title}</span> at{" "}
+              <span className="font-semibold text-gray-700">{company}</span>?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleApply}
+                className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 rounded-lg transition-colors"
+              >
+                Yes, Apply
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Notice Modal (login required / access denied / already applied / error / success) */}
+      {notice && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full">
+            <div
+              className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl mx-auto mb-4 ${
+                notice.title === "Success"
+                  ? "bg-emerald-50 text-emerald-500"
+                  : "bg-red-50 text-red-500"
+              }`}
+            >
+              {notice.title === "Success" ? "✅" : "⚠️"}
+            </div>
+            <h3 className="text-lg font-bold text-gray-900 text-center mb-2">
+              {notice.title}
+            </h3>
+            <p className="text-sm text-gray-500 text-center mb-6">
+              {notice.message}
+            </p>
+            {notice.title === "Login Required" ? (
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setNotice(null)}
+                  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+                <Link
+                  to="/login"
+                  className="flex-1 text-center bg-slate-700 hover:bg-slate-800 text-white font-semibold py-2 rounded-lg transition-colors"
+                >
+                  Login
+                </Link>
+              </div>
+            ) : (
+              <button
+                onClick={() => setNotice(null)}
+                className="w-full bg-slate-700 hover:bg-slate-800 text-white font-semibold py-2 rounded-lg transition-colors"
+              >
+                OK
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

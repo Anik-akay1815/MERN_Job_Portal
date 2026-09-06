@@ -79,7 +79,7 @@ function Footer() {
             </li>
             <li>
               <a
-                href="/dashboard"
+                href="/Dashboard"
                 className="hover:text-emerald-400 transition-colors duration-200"
               >
                 Dashboard

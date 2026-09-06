@@ -66,7 +66,7 @@ exports.login = async (req, res, next) => {
 
 exports.getallCompany = async (req, res, next) => {
   try {
-    const allCompanies = await Company.find();
+    const allCompanies = await Company.find().select("-password");;
     res.status(200).json({
       success: true,
       message: "All registered Companies",
@@ -83,7 +83,7 @@ exports.getallCompany = async (req, res, next) => {
 exports.getbyID = async (req, res, next) => {
   try {
     const id = req.params.id;
-    const company = await Company.findById(id);
+    const company = await Company.findById(id).select("-password");;
     const jobs = await Job.find({company:id});
     if (!company) {
       return res.status(404).json({
