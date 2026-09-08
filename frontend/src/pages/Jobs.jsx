@@ -10,6 +10,12 @@ function Jobs() {
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
   const [sortBy, setSortBy] = useState("");
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalJobs, setTotalJobs] = useState(0);
+
   const panelRef = useRef(null);
 
   const [filters, setFilters] = useState({
@@ -20,7 +26,7 @@ function Jobs() {
   });
 
   useEffect(() => {
-    fetchJobs(filters);
+    fetchJobs(filters, 1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -31,18 +37,32 @@ function Jobs() {
         setShowFilters(false);
       }
     };
+
     document.addEventListener("mousedown", handleClickOutside);
+
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const fetchJobs = async (appliedFilters) => {
+  const fetchJobs = async (appliedFilters, page = 1) => {
     setLoading(true);
+
     try {
       const cleanFilters = Object.fromEntries(
-        Object.entries(appliedFilters).filter(([, v]) => v && v.trim() !== "")
+        Object.entries(appliedFilters).filter(([, v]) => v && v.trim() !== ""),
       );
-      const res = await getAllJobs(cleanFilters);
+
+      const res = await getAllJobs({
+        ...cleanFilters,
+        page,
+        limit: 6,
+      });
+
       setJobs(res.data.data);
+
+      // Pagination data from backend
+      setCurrentPage(res.data.currentPage);
+      setTotalPages(res.data.totalPages);
+      setTotalJobs(res.data.totalJobs);
     } catch (err) {
       alert(err.response?.data?.message || "Something went wrong");
     } finally {
@@ -51,16 +71,22 @@ function Jobs() {
   };
 
   const handleFilterChange = (e) => {
-    setFilters({ ...filters, [e.target.name]: e.target.value });
+    setFilters({
+      ...filters,
+      [e.target.name]: e.target.value,
+    });
   };
 
   const handleSearch = (e) => {
     e.preventDefault();
-    fetchJobs(filters);
+
+    // Search always starts from page 1
+    fetchJobs(filters, 1);
   };
 
   const handleApplyFilters = () => {
-    fetchJobs(filters);
+    // Filters start from page 1
+    fetchJobs(filters, 1);
     setShowFilters(false);
   };
 
@@ -71,13 +97,18 @@ function Jobs() {
       jobType: "",
       experienceLevel: "",
     };
+
     setFilters(resetFilters);
     setSortBy("");
-    fetchJobs(resetFilters);
+
+    // Reset starts from page 1
+    fetchJobs(resetFilters, 1);
+
     setShowFilters(false);
   };
 
-  // Extract a numeric value from strings like "12 LPA" for client-side sorting
+  // Extract a numeric value from strings like "12 LPA"
+  // for client-side sorting
   const extractSalaryNumber = (salaryStr) => {
     const match = salaryStr?.match(/[\d.]+/);
     return match ? parseFloat(match[0]) : 0;
@@ -87,9 +118,11 @@ function Jobs() {
     if (sortBy === "salary-desc") {
       return extractSalaryNumber(b.salary) - extractSalaryNumber(a.salary);
     }
+
     if (sortBy === "salary-asc") {
       return extractSalaryNumber(a.salary) - extractSalaryNumber(b.salary);
     }
+
     return 0;
   });
 
@@ -99,14 +132,24 @@ function Jobs() {
     sortBy,
   ].filter(Boolean).length;
 
+  // Pagination handler
+  const handlePageChange = (page) => {
+    if (page < 1 || page > totalPages) return;
+
+    fetchJobs(filters, page);
+  };
+
   return (
     <>
       <Navbar />
+
       <section className="max-w-7xl mx-auto px-6 py-10">
+        {/* Header */}
         <div className="text-center mb-10">
           <h1 className="text-4xl font-bold">
             Browse <span className="text-slate-700">Jobs</span>
           </h1>
+
           <p className="text-gray-500 mt-2">
             Find your next opportunity from top companies
           </p>
@@ -121,6 +164,7 @@ function Jobs() {
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
               🔍
             </span>
+
             <input
               type="text"
               name="keyword"
@@ -135,6 +179,7 @@ function Jobs() {
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
               📍
             </span>
+
             <input
               type="text"
               name="location"
@@ -165,6 +210,7 @@ function Jobs() {
               title="Filters"
             >
               <span className="text-base">✎</span>
+
               {activeFilterCount > 0 && (
                 <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-emerald-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                   {activeFilterCount}
@@ -221,6 +267,7 @@ function Jobs() {
                   >
                     Reset
                   </button>
+
                   <button
                     type="button"
                     onClick={handleApplyFilters}
@@ -236,7 +283,7 @@ function Jobs() {
 
         {/* Job count */}
         <p className="text-gray-500 mb-4">
-          {loading ? "Searching..." : `${sortedJobs.length} jobs found`}
+          {loading ? "Searching..." : `${totalJobs} jobs found`}
         </p>
 
         {/* Job grid */}
@@ -245,27 +292,82 @@ function Jobs() {
             No jobs found
           </p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {sortedJobs.map((job) => (
-              <JobCard
-                key={job._id}
-                jobId={job._id}
-                title={job.title}
-                company={job.company?.companyname}
-                location={job.location}
-                salary={job.salary}
-                jobType={job.jobType}
-                experienceLevel={job.experienceLevel}
-                skillsRequired={job.skillsRequired}
-                category={job.category}
-                numberOfOpenings={job.numberOfOpenings}
-                applicationDeadline={job.applicationDeadline}
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {sortedJobs.map((job) => (
+                <JobCard
+                  key={job._id}
+                  jobId={job._id}
+                  title={job.title}
+                  company={job.company?.companyname}
+                  location={job.location}
+                  salary={job.salary}
+                  jobType={job.jobType}
+                  experienceLevel={job.experienceLevel}
+                  skillsRequired={job.skillsRequired}
+                  category={job.category}
+                  numberOfOpenings={job.numberOfOpenings}
+                  applicationDeadline={job.applicationDeadline}
+                />
+              ))}
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-2 mt-10">
+                {/* Previous */}
+                <button
+                  type="button"
+                  disabled={currentPage === 1}
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  className={`px-4 py-2 rounded-lg border text-sm font-semibold transition-all duration-300 ${
+                    currentPage === 1
+                      ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
+                      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                  }`}
+                >
+                  Previous
+                </button>
+
+                {/* Page Numbers */}
+                {Array.from(
+                  { length: totalPages },
+                  (_, index) => index + 1,
+                ).map((page) => (
+                  <button
+                    type="button"
+                    key={page}
+                    onClick={() => handlePageChange(page)}
+                    className={`w-10 h-10 rounded-lg text-sm font-semibold transition-all duration-300 ${
+                      currentPage === page
+                        ? "bg-emerald-500 text-white shadow-sm"
+                        : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+
+                {/* Next */}
+                <button
+                  type="button"
+                  disabled={currentPage === totalPages}
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  className={`px-4 py-2 rounded-lg border text-sm font-semibold transition-all duration-300 ${
+                    currentPage === totalPages
+                      ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
+                      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                  }`}
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </>
         )}
       </section>
     </>
   );
 }
+
 export default Jobs;

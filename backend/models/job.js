@@ -29,7 +29,7 @@ const jobSchema=mongoose.Schema({
   },
   experienceLevel:{
     type:String,
-    enum:["0-1 years","1-3 years","3-5 years","5+ years"],
+    enum:["Fresher","0-1 years","1-3 years","3-5 years","5+ years"],
     default:"0-1 years"
   },
   category:{
