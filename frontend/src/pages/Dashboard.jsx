@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { getDashboard } from "../services/authService.js";
 
 function Dashboard() {
-  const [Dashboard, setDashboard] = useState(null);
+  const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
 
@@ -23,125 +23,313 @@ function Dashboard() {
     fetchDashboard();
   }, []);
 
-  const company = JSON.parse(localStorage.getItem("user"));
+  const company = JSON.parse(localStorage.getItem("user") || "null");
 
-  const recentJobs = Dashboard?.recentJobs || [];
+  const recentJobs = dashboard?.recentJobs || [];
+
   const filteredJobs = recentJobs.filter((job) =>
-    job.title?.toLowerCase().includes(search.trim().toLowerCase())
+    job.title?.toLowerCase().includes(search.trim().toLowerCase()),
   );
 
-  const totalApplications = Dashboard?.totalApplications ?? 0;
-  const pending = Dashboard?.pending ?? 0;
-  const accepted = Dashboard?.accepted ?? 0;
-  const rejected = Dashboard?.rejected ?? 0;
+  const totalApplications = dashboard?.totalApplications ?? 0;
+  const pending = dashboard?.pending ?? 0;
+  const accepted = dashboard?.accepted ?? 0;
+  const rejected = dashboard?.rejected ?? 0;
+  const totalJobs = dashboard?.totalJobs ?? 0;
 
   const pct = (value) =>
     totalApplications > 0 ? Math.round((value / totalApplications) * 100) : 0;
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#080d12] text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-[#2b353f] border-t-[#f5c542]" />
+          <p className="mt-4 text-sm uppercase tracking-[0.2em] text-gray-400">
+            Loading dashboard...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <>
+    <div className="min-h-screen bg-[#080d12] text-white">
+      {/* ================= NAVBAR ================= */}
       <Navbar />
-      <div className="max-w-6xl mx-auto px-6 py-10">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              Hey {company?.companyname || "there"}! 👋
-            </h1>
-            <p className="text-gray-500 mt-1">
-              Here's an overview of your job postings and applications
+
+      <div className="flex">
+        {/* ================= SIDEBAR ================= */}
+        <aside className="hidden lg:flex w-60 min-h-[calc(100vh-73px)] bg-[#111820] border-r border-[#27303a] flex-col sticky top-18.25">
+          {/* Sidebar heading */}
+          <div className="px-5 py-6 border-b border-[#27303a]">
+            <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500">
+              Workspace
+            </p>
+
+            <h2 className="text-lg font-bold mt-1 text-white">Company Panel</h2>
+          </div>
+
+          {/* Menu */}
+          <div className="p-4 space-y-2">
+            <Link
+              to="/Dashboard"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg bg-[#202932] border-l-2 border-[#f5c542] text-white"
+            >
+              <span className="text-[#f5c542]">▣</span>
+              Dashboard
+            </Link>
+
+            <Link
+              to="/postjob"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-[#1b232c] transition"
+            >
+              <span>＋</span>
+              Post a Job
+            </Link>
+
+            <Link
+              to="/myjobs"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-[#1b232c] transition"
+            >
+              <span>▤</span>
+              My Jobs
+            </Link>
+
+            <Link
+              to="/companyprofile"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-[#1b232c] transition"
+            >
+              <span>◉</span>
+              Company Profile
+            </Link>
+          </div>
+
+          {/* Bottom info */}
+          <div className="mt-auto p-5 border-t border-[#27303a]">
+            <p className="text-xs text-gray-500">Logged in as</p>
+
+            <p className="text-sm font-semibold text-gray-300 mt-1 truncate">
+              {company?.companyname || "Company"}
             </p>
           </div>
-          <Link
-            to="/postjob"
-            className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-6 py-2.5 rounded-lg transition-all duration-300 shadow-sm hover:shadow-md whitespace-nowrap"
-          >
-            + Post a Job
-          </Link>
-        </div>
+        </aside>
 
-        {loading ? (
-          <p className="text-gray-500 text-center py-10">
-            Loading Dashboard...
-          </p>
-        ) : (
-          <>
-            {/* Stat Bar */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-8">
-              <div className="relative overflow-hidden bg-linear-to-br from-indigo-500 to-indigo-700 rounded-2xl p-6 text-white shadow-lg shadow-indigo-200">
-                <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-white/10 blur-xl" />
-                <p className="text-4xl font-bold relative">
-                  {totalApplications}
+        {/* ================= MAIN ================= */}
+        <main className="flex-1 min-w-0">
+          <div className="max-w-350 mx-auto px-5 md:px-8 py-7">
+            {/* ================= TOP HEADER ================= */}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5 mb-7">
+              <div>
+                <p className="text-xs uppercase tracking-[0.18em] text-[#f5c542] mb-2">
+                  Overview
                 </p>
-                <p className="text-indigo-100 font-medium mt-1 relative text-sm">
-                  📄 Applicants
+
+                <h1 className="text-2xl md:text-3xl font-bold text-white">
+                  Welcome back,{" "}
+                  <span className="text-[#f5c542]">
+                    {company?.companyname || "Company"}
+                  </span>
+                </h1>
+
+                <p className="text-sm text-gray-500 mt-2">
+                  Monitor your jobs and candidate applications.
                 </p>
               </div>
 
-              <div className="relative overflow-hidden bg-linear-to-br from-sky-500 to-blue-600 rounded-2xl p-6 text-white shadow-lg shadow-sky-200">
-                <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-white/10 blur-xl" />
-                <p className="text-4xl font-bold relative">
-                  {Dashboard?.totalJobs ?? 0}
-                </p>
-                <p className="text-sky-100 font-medium mt-1 relative text-sm">
-                  💼 Jobs Posted
+              <Link
+                to="/postjob"
+                className="
+                  inline-flex items-center justify-center gap-2
+                  bg-[#f5c542]
+                  hover:bg-[#ffd45e]
+                  text-[#101419]
+                  font-bold
+                  px-5 py-3
+                  rounded-lg
+                  shadow-[0_0_25px_rgba(245,197,66,0.15)]
+                  transition-all duration-200
+                "
+              >
+                <span className="text-lg">＋</span>
+                Post New Job
+              </Link>
+            </div>
+
+            {/* ================= STAT CARDS ================= */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-7">
+              {/* Applications */}
+              <div className="relative overflow-hidden bg-[#151d25] border border-[#2b353f] rounded-xl p-5">
+                <div className="absolute right-0 top-0 w-20 h-20 bg-[#f5c542]/5 rounded-full blur-2xl" />
+
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] uppercase tracking-widest text-gray-500">
+                    Total Applications
+                  </p>
+
+                  <span className="w-8 h-8 rounded-lg bg-[#252d35] flex items-center justify-center text-[#f5c542]">
+                    ◈
+                  </span>
+                </div>
+
+                <p className="text-3xl font-bold mt-4">{totalApplications}</p>
+
+                <div className="mt-4 h-0.5 bg-[#27313a]">
+                  <div className="h-full bg-[#f5c542] w-[70%]" />
+                </div>
+              </div>
+
+              {/* Jobs */}
+              <div className="relative overflow-hidden bg-[#151d25] border border-[#2b353f] rounded-xl p-5">
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] uppercase tracking-widest text-gray-500">
+                    Jobs Posted
+                  </p>
+
+                  <span className="w-8 h-8 rounded-lg bg-[#252d35] flex items-center justify-center text-[#f5c542]">
+                    ▤
+                  </span>
+                </div>
+
+                <p className="text-3xl font-bold mt-4">{totalJobs}</p>
+
+                <p className="text-xs text-gray-500 mt-2">
+                  Active positions in your company
                 </p>
               </div>
 
-              <div className="relative overflow-hidden bg-linear-to-br from-emerald-500 to-teal-600 rounded-2xl p-6 text-white shadow-lg shadow-emerald-200">
-                <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-white/10 blur-xl" />
-                <p className="text-4xl font-bold relative">{accepted}</p>
-                <p className="text-emerald-100 font-medium mt-1 relative text-sm">
-                  ✅ Accepted
+              {/* Accepted */}
+              <div className="relative overflow-hidden bg-[#151d25] border border-[#2b353f] rounded-xl p-5">
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] uppercase tracking-widest text-gray-500">
+                    Accepted
+                  </p>
+
+                  <span className="w-8 h-8 rounded-lg bg-[#252d35] flex items-center justify-center text-green-400">
+                    ✓
+                  </span>
+                </div>
+
+                <p className="text-3xl font-bold mt-4 text-green-400">
+                  {accepted}
+                </p>
+
+                <p className="text-xs text-gray-500 mt-2">
+                  {pct(accepted)}% of total applications
                 </p>
               </div>
 
-              <div className="relative overflow-hidden bg-linear-to-br from-orange-400 to-amber-500 rounded-2xl p-6 text-white shadow-lg shadow-orange-200">
-                <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-white/10 blur-xl" />
-                <p className="text-4xl font-bold relative">{pending}</p>
-                <p className="text-orange-50 font-medium mt-1 relative text-sm">
-                  ⏳ Pending
+              {/* Pending */}
+              <div className="relative overflow-hidden bg-[#151d25] border border-[#2b353f] rounded-xl p-5">
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] uppercase tracking-widest text-gray-500">
+                    Pending
+                  </p>
+
+                  <span className="w-8 h-8 rounded-lg bg-[#252d35] flex items-center justify-center text-[#f5c542]">
+                    ◷
+                  </span>
+                </div>
+
+                <p className="text-3xl font-bold mt-4 text-[#f5c542]">
+                  {pending}
                 </p>
+
+                <p className="text-xs text-gray-500 mt-2">Waiting for review</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
-              {/* Recent Jobs cards */}
-              <div className="lg:col-span-2">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-bold text-gray-900">
-                    Recent Jobs
-                  </h2>
+            {/* ================= MAIN GRID ================= */}
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-5 mb-7">
+              {/* ================= RECENT JOBS ================= */}
+              <div className="xl:col-span-2 bg-[#111820] border border-[#27313a] rounded-xl overflow-hidden">
+                <div className="px-5 py-4 border-b border-[#27313a] flex items-center justify-between">
+                  <div>
+                    <p className="text-[10px] uppercase tracking-widest text-[#f5c542]">
+                      Activity
+                    </p>
+
+                    <h2 className="font-bold text-lg mt-1">
+                      Recent Job Postings
+                    </h2>
+                  </div>
+
                   <Link
                     to="/myjobs"
-                    className="text-slate-700 font-semibold hover:underline text-sm"
+                    className="text-xs text-gray-400 hover:text-[#f5c542] transition"
                   >
                     View All →
                   </Link>
                 </div>
 
                 {recentJobs.length === 0 ? (
-                  <p className="text-gray-500 text-center bg-gray-50 rounded-xl py-10">
-                    No jobs posted yet
-                  </p>
+                  <div className="py-14 text-center">
+                    <div className="text-3xl text-gray-600 mb-3">▤</div>
+
+                    <p className="text-gray-400">No jobs posted yet</p>
+
+                    <Link
+                      to="/postjob"
+                      className="inline-block mt-4 text-xs text-[#f5c542] hover:underline"
+                    >
+                      Create your first job →
+                    </Link>
+                  </div>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {recentJobs.map((job) => (
+                  <div className="divide-y divide-[#27313a]">
+                    {recentJobs.slice(0, 5).map((job) => (
                       <div
                         key={job._id}
-                        className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-all duration-300"
+                        className="
+                          px-5 py-4
+                          flex flex-col sm:flex-row
+                          sm:items-center
+                          justify-between
+                          gap-4
+                          hover:bg-[#151e27]
+                          transition
+                        "
                       >
-                        <h3 className="font-semibold text-gray-900">
-                          {job.title}
-                        </h3>
-                        <p className="text-gray-500 text-sm mt-1">
-                          📍 {job.location}
-                        </p>
+                        <div className="flex items-center gap-4">
+                          <div
+                            className="
+                            w-10 h-10
+                            rounded-lg
+                            bg-[#242d36]
+                            border border-[#39434d]
+                            flex items-center justify-center
+                            text-[#f5c542]
+                            font-bold
+                          "
+                          >
+                            {job.title?.charAt(0)?.toUpperCase() || "J"}
+                          </div>
+
+                          <div>
+                            <h3 className="font-semibold text-gray-200">
+                              {job.title}
+                            </h3>
+
+                            <p className="text-xs text-gray-500 mt-1">
+                              📍 {job.location}
+                            </p>
+                          </div>
+                        </div>
+
                         <Link
                           to={`/jobs/${job._id}`}
-                          className="inline-block mt-3 text-sm font-semibold text-slate-700 hover:text-slate-900 hover:underline"
+                          className="
+                            text-xs font-semibold
+                            border border-[#39434d]
+                            px-4 py-2
+                            rounded-md
+                            text-gray-300
+                            hover:border-[#f5c542]
+                            hover:text-[#f5c542]
+                            transition
+                          "
                         >
-                          View Details →
+                          View Details
                         </Link>
                       </div>
                     ))}
@@ -149,95 +337,167 @@ function Dashboard() {
                 )}
               </div>
 
-              {/* Application Breakdown */}
-              <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-md">
-                <h2 className="text-base font-bold text-gray-900 mb-4">
-                  Applications Breakdown
-                </h2>
+              {/* ================= APPLICATION BREAKDOWN ================= */}
+              <div className="bg-[#111820] border border-[#27313a] rounded-xl p-5">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <p className="text-[10px] uppercase tracking-widest text-[#f5c542]">
+                      Analytics
+                    </p>
 
-                <div className="w-full h-2.5 rounded-full overflow-hidden flex bg-gray-100 mb-5">
-                  <div
-                    className="bg-orange-400"
-                    style={{ width: `${pct(pending)}%` }}
-                  />
-                  <div
-                    className="bg-emerald-500"
-                    style={{ width: `${pct(accepted)}%` }}
-                  />
-                  <div
-                    className="bg-red-400"
-                    style={{ width: `${pct(rejected)}%` }}
-                  />
+                    <h2 className="font-bold text-lg mt-1">Applications</h2>
+                  </div>
+
+                  <span className="text-xs text-gray-500">Overview</span>
                 </div>
 
-                <div className="space-y-3 text-sm">
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-2 text-gray-600">
-                      <span className="w-2.5 h-2.5 rounded-full bg-orange-400" />
-                      Pending
-                    </span>
-                    <span className="font-semibold text-gray-800">
-                      {pending}
-                    </span>
+                {/* Fake circular visual */}
+                <div className="flex justify-center mb-7">
+                  <div
+                    className="
+                    relative
+                    w-36 h-36
+                    rounded-full
+                    flex items-center justify-center
+                    bg-[#151d25]
+                    border-[10px]
+                    border-[#2b353f]
+                    shadow-[0_0_30px_rgba(245,197,66,0.08)]
+                  "
+                  >
+                    <div
+                      className="
+                      absolute inset-[-10px]
+                      rounded-full
+                      border-[10px]
+                      border-transparent
+                      border-t-[#f5c542]
+                      border-r-[#f5c542]
+                      rotate-[-25deg]
+                    "
+                    />
+
+                    <div className="text-center relative z-10">
+                      <p className="text-2xl font-bold">{totalApplications}</p>
+
+                      <p className="text-[9px] uppercase tracking-widest text-gray-500">
+                        Total
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-2 text-gray-600">
-                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                      Accepted
-                    </span>
-                    <span className="font-semibold text-gray-800">
-                      {accepted}
-                    </span>
+                </div>
+
+                {/* Pending */}
+                <div className="flex items-center justify-between py-3 border-b border-[#27313a]">
+                  <div className="flex items-center gap-3">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#f5c542]" />
+                    <span className="text-sm text-gray-400">Pending</span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-2 text-gray-600">
-                      <span className="w-2.5 h-2.5 rounded-full bg-red-400" />
-                      Rejected
-                    </span>
-                    <span className="font-semibold text-gray-800">
-                      {rejected}
-                    </span>
+
+                  <span className="font-semibold">{pending}</span>
+                </div>
+
+                {/* Accepted */}
+                <div className="flex items-center justify-between py-3 border-b border-[#27313a]">
+                  <div className="flex items-center gap-3">
+                    <span className="w-2.5 h-2.5 rounded-full bg-green-400" />
+                    <span className="text-sm text-gray-400">Accepted</span>
                   </div>
+
+                  <span className="font-semibold">{accepted}</span>
+                </div>
+
+                {/* Rejected */}
+                <div className="flex items-center justify-between py-3">
+                  <div className="flex items-center gap-3">
+                    <span className="w-2.5 h-2.5 rounded-full bg-red-400" />
+                    <span className="text-sm text-gray-400">Rejected</span>
+                  </div>
+
+                  <span className="font-semibold">{rejected}</span>
                 </div>
               </div>
             </div>
 
-            {/* Job Listings table with search */}
-            <div>
-              <h2 className="text-xl font-bold text-gray-900 mb-4">
-                Job Listings
-              </h2>
+            {/* ================= JOB LISTINGS ================= */}
+            <div className="bg-[#111820] border border-[#27313a] rounded-xl overflow-hidden">
+              {/* Header */}
+              <div className="px-5 py-5 border-b border-[#27313a]">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                  <div>
+                    <p className="text-[10px] uppercase tracking-widest text-[#f5c542]">
+                      Positions
+                    </p>
 
-              <div className="relative mb-4 max-w-sm">
-                <input
-                  type="text"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search positions..."
-                  className="w-full border border-gray-300 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                />
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                  🔍
-                </span>
+                    <h2 className="text-lg font-bold mt-1">Job Listings</h2>
+                  </div>
+
+                  {/* Search */}
+                  <div className="relative w-full md:w-72">
+                    <input
+                      type="text"
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      placeholder="Search positions..."
+                      className="
+                        w-full
+                        bg-[#0b1117]
+                        border border-[#303b45]
+                        text-white
+                        placeholder:text-gray-600
+                        rounded-lg
+                        pl-10 pr-4 py-2.5
+                        text-sm
+                        outline-none
+                        focus:border-[#f5c542]
+                        focus:ring-1
+                        focus:ring-[#f5c542]
+                        transition
+                      "
+                    />
+
+                    <span
+                      className="
+                      absolute left-3 top-1/2
+                      -translate-y-1/2
+                      text-gray-500
+                    "
+                    >
+                      ⌕
+                    </span>
+                  </div>
+                </div>
               </div>
 
-              <div className="bg-white shadow-md rounded-2xl overflow-hidden border border-gray-100">
+              {/* Table */}
+              <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead className="bg-gray-50/80 text-gray-500 text-left uppercase text-[11px] tracking-wider">
+                  <thead className="bg-[#151d25] text-[10px] uppercase tracking-widest text-gray-500">
                     <tr>
-                      <th className="px-6 py-3.5 font-semibold">Position</th>
-                      <th className="px-6 py-3.5 font-semibold">Location</th>
-                      <th className="px-6 py-3.5 font-semibold text-right">
+                      <th className="px-5 py-4 text-left font-medium">
+                        Position
+                      </th>
+
+                      <th className="px-5 py-4 text-left font-medium">
+                        Location
+                      </th>
+
+                      <th className="px-5 py-4 text-left font-medium">
+                        Status
+                      </th>
+
+                      <th className="px-5 py-4 text-right font-medium">
                         Action
                       </th>
                     </tr>
                   </thead>
+
                   <tbody>
                     {filteredJobs.length === 0 ? (
                       <tr>
                         <td
-                          colSpan={3}
-                          className="px-6 py-8 text-center text-gray-400"
+                          colSpan={4}
+                          className="px-5 py-12 text-center text-gray-600"
                         >
                           No positions found
                         </td>
@@ -246,18 +506,66 @@ function Dashboard() {
                       filteredJobs.map((job) => (
                         <tr
                           key={job._id}
-                          className="border-t border-gray-100 hover:bg-gray-50/70 transition-colors"
+                          className="
+                            border-t border-[#27313a]
+                            hover:bg-[#151e27]
+                            transition
+                          "
                         >
-                          <td className="px-6 py-4 font-semibold text-gray-800">
-                            {job.title}
+                          <td className="px-5 py-4">
+                            <div className="flex items-center gap-3">
+                              <div
+                                className="
+                                w-8 h-8
+                                rounded-md
+                                bg-[#242d36]
+                                flex items-center justify-center
+                                text-[#f5c542]
+                                text-xs
+                                font-bold
+                              "
+                              >
+                                {job.title?.charAt(0)?.toUpperCase() || "J"}
+                              </div>
+
+                              <span className="font-semibold text-gray-200">
+                                {job.title}
+                              </span>
+                            </div>
                           </td>
-                          <td className="px-6 py-4 text-gray-500">
+
+                          <td className="px-5 py-4 text-gray-500">
                             📍 {job.location}
                           </td>
-                          <td className="px-6 py-4 text-right">
+
+                          <td className="px-5 py-4">
+                            <span
+                              className="
+                              inline-flex items-center gap-2
+                              text-xs
+                              text-green-400
+                            "
+                            >
+                              <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
+                              Active
+                            </span>
+                          </td>
+
+                          <td className="px-5 py-4 text-right">
                             <Link
                               to={`/jobs/${job._id}`}
-                              className="text-xs font-semibold text-slate-700 border border-slate-200 bg-slate-50 px-3 py-1.5 rounded-lg hover:bg-slate-100 transition-colors"
+                              className="
+                                inline-block
+                                text-xs
+                                font-semibold
+                                px-3 py-1.5
+                                rounded-md
+                                border border-[#39434d]
+                                text-gray-300
+                                hover:border-[#f5c542]
+                                hover:text-[#f5c542]
+                                transition
+                              "
                             >
                               View
                             </Link>
@@ -269,10 +577,17 @@ function Dashboard() {
                 </table>
               </div>
             </div>
-          </>
-        )}
+
+            {/* ================= FOOTER ================= */}
+            <div className="mt-6 flex flex-col sm:flex-row justify-between gap-2 text-[10px] uppercase tracking-widest text-gray-600">
+              <span>Job Portal • Company Dashboard</span>
+
+              <span>Dashboard Overview</span>
+            </div>
+          </div>
+        </main>
       </div>
-    </>
+    </div>
   );
 }
 

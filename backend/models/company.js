@@ -25,7 +25,6 @@ const companySchema=mongoose.Schema({
   website:{
     type:String,
     default:"",
-    required:true,
   },
   industry:{
     type:String,
@@ -43,7 +42,6 @@ const companySchema=mongoose.Schema({
   linkedin:{
     type:String,
     default:"",
-    required:true,
   },
   role:{
     type:String,
