@@ -21,25 +21,36 @@ function App(){
   return(
     <>
       <Routes>
+        {/* Basic Everyone visible pages */}
         <Route path='/' element={<Home/>}/>
+        <Route path='/jobs' element={<Jobs/>}/>
+        <Route path='/jobs/:id' element={<JobDetail/>}/>
+        <Route path='/allcompany' element={<Companies/>}/>
+
+        {/* Login and Register */}
         <Route path='/login' element={<Login/>}/>
         <Route path='/register' element={<Register/>}/>
         <Route path='/company/register' element={<CompanyRegister/>}/>
-        <Route path='/jobs' element={<Jobs/>}/>
-        <Route path='/jobs/:id' element={<JobDetail/>}/>
+
+        {/* User Fields */}
         <Route path='/company/:id' element={<CompanyProfile/>}/>  {/* user access */}        
-        <Route path='/userprofile' element={<ProtectedRoute allowedRole={['user', 'admin']}><UserProfile/></ProtectedRoute>}/>
+        <Route path='/userprofile' element={<ProtectedRoute allowedRole={['user', 'admin']}><UserProfile/></ProtectedRoute>}/>{/* user access */}
         <Route path="/myapplications" element={<ProtectedRoute allowedRole='user'><MyApplications/></ProtectedRoute>}/>
         <Route path="/userdashboard" element={<ProtectedRoute allowedRole='user'><UserDashboard/></ProtectedRoute>}/>
-        <Route path='/Dashboard' element={<ProtectedRoute allowedRole='company'><Dashboard/></ProtectedRoute>}/>
-        <Route path='/companyprofile' element={<ProtectedRoute allowedRole='company'><CompanyProfile/></ProtectedRoute>}/> {/* company access */}
+
+        <Route path='/user/:id' element={<ProtectedRoute allowedRole={['company', 'admin']}><UserProfile/></ProtectedRoute>}/>{/* company and admin access */}
+
+        {/* Company Fields */}
         <Route path='/myjobs' element={<ProtectedRoute allowedRole='company'><MyJobs/></ProtectedRoute>}/>
         <Route path='/postjob' element={<ProtectedRoute allowedRole='company'><PostJobs/></ProtectedRoute>}/>
         <Route path='/editjob/:id' element={<ProtectedRoute allowedRole='company'><PostJobs/></ProtectedRoute>}/>
         <Route path='/applications/:jobId' element={<ProtectedRoute allowedRole='company'><Applicants/></ProtectedRoute>}/>
-        <Route path='/user/:id' element={<ProtectedRoute allowedRole={['company', 'admin']}><UserProfile/></ProtectedRoute>}/>
+        <Route path='/Dashboard' element={<ProtectedRoute allowedRole='company'><Dashboard/></ProtectedRoute>}/>
+        <Route path='/companyprofile' element={<ProtectedRoute allowedRole='company'><CompanyProfile/></ProtectedRoute>}/> {/* company access */}
+
+        {/* Admin access */}
         <Route path="/admin" element={ <ProtectedRoute allowedRole="admin"><AdminDashboard /></ProtectedRoute>}/>
-        <Route path='/allcompany' element={<Companies/>}/>
+        
 
       </Routes>
     </>

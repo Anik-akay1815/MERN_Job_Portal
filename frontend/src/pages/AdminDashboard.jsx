@@ -10,6 +10,129 @@ import {
   deleteJobAdmin,
 } from "../services/authService.js";
 
+/* Lightweight inline SVG icons — no external icon package needed */
+const iconProps = (size, strokeWidth) => ({
+  width: size,
+  height: size,
+  viewBox: "0 0 24 24",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth,
+  strokeLinecap: "round",
+  strokeLinejoin: "round",
+});
+
+function LayoutDashboard({ size = 18, strokeWidth = 2, className }) {
+  return (
+    <svg {...iconProps(size, strokeWidth)} className={className}>
+      <rect x="3" y="3" width="7" height="9" rx="1" />
+      <rect x="14" y="3" width="7" height="5" rx="1" />
+      <rect x="14" y="12" width="7" height="9" rx="1" />
+      <rect x="3" y="16" width="7" height="5" rx="1" />
+    </svg>
+  );
+}
+
+function UsersIcon({ size = 18, strokeWidth = 2, className }) {
+  return (
+    <svg {...iconProps(size, strokeWidth)} className={className}>
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  );
+}
+
+function Building2({ size = 18, strokeWidth = 2, className }) {
+  return (
+    <svg {...iconProps(size, strokeWidth)} className={className}>
+      <path d="M6 22V4a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v18Z" />
+      <path d="M6 12H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h2" />
+      <path d="M18 9h2a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1h-2" />
+      <path d="M10 6h2M10 10h2M10 14h2M10 18h2" />
+    </svg>
+  );
+}
+
+function Briefcase({ size = 18, strokeWidth = 2, className }) {
+  return (
+    <svg {...iconProps(size, strokeWidth)} className={className}>
+      <rect x="2" y="7" width="20" height="14" rx="2" />
+      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+      <path d="M2 13h20" />
+    </svg>
+  );
+}
+
+function FileText({ size = 18, strokeWidth = 2, className }) {
+  return (
+    <svg {...iconProps(size, strokeWidth)} className={className}>
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" />
+      <path d="M14 2v6h6" />
+      <path d="M8 13h8M8 17h8M8 9h2" />
+    </svg>
+  );
+}
+
+function BarChart3({ size = 18, strokeWidth = 2, className }) {
+  return (
+    <svg {...iconProps(size, strokeWidth)} className={className}>
+      <path d="M3 3v18h18" />
+      <path d="M18 17V9M13 17V5M8 17v-4" />
+    </svg>
+  );
+}
+
+function SettingsIcon({ size = 18, strokeWidth = 2, className }) {
+  return (
+    <svg {...iconProps(size, strokeWidth)} className={className}>
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" />
+    </svg>
+  );
+}
+
+function LogOut({ size = 18, strokeWidth = 2, className }) {
+  return (
+    <svg {...iconProps(size, strokeWidth)} className={className}>
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <path d="M16 17l5-5-5-5" />
+      <path d="M21 12H9" />
+    </svg>
+  );
+}
+
+function MapPin({ size = 14, strokeWidth = 2, className }) {
+  return (
+    <svg {...iconProps(size, strokeWidth)} className={className}>
+      <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+      <circle cx="12" cy="10" r="3" />
+    </svg>
+  );
+}
+
+function Trash2({ size = 16, strokeWidth = 2, className }) {
+  return (
+    <svg {...iconProps(size, strokeWidth)} className={className}>
+      <path d="M3 6h18" />
+      <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+      <path d="M10 11v6M14 11v6" />
+    </svg>
+  );
+}
+
+function AlertTriangle({ size = 26, strokeWidth = 2, className }) {
+  return (
+    <svg {...iconProps(size, strokeWidth)} className={className}>
+      <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
+      <path d="M12 9v4" />
+      <path d="M12 17h.01" />
+    </svg>
+  );
+}
+
 function Sparkline({ color }) {
   return (
     <svg viewBox="0 0 100 30" className="w-full h-8 mt-3" preserveAspectRatio="none">
@@ -121,12 +244,12 @@ function AdminDashboard() {
   };
 
   const sidebarItems = [
-    { label: "Dashboard", icon: "🏠", id: null },
-    { label: "Users", icon: "👤", id: "users-section" },
-    { label: "Companies", icon: "🏢", id: "companies-section" },
-    { label: "Jobs", icon: "💼", id: "jobs-section" },
-    { label: "Applications", icon: "📄", id: null },
-    { label: "Analytics", icon: "📊", id: null },
+    { label: "Dashboard", Icon: LayoutDashboard, id: null },
+    { label: "Users", Icon: UsersIcon, id: "users-section" },
+    { label: "Companies", Icon: Building2, id: "companies-section" },
+    { label: "Jobs", Icon: Briefcase, id: "jobs-section" },
+    { label: "Applications", Icon: FileText, id: null },
+    { label: "Analytics", Icon: BarChart3, id: null },
   ];
 
   if (loading) {
@@ -155,21 +278,29 @@ function AdminDashboard() {
           {/* SIDEBAR — scrolls to sections on this same page, no new routes */}
           <aside className="hidden md:flex md:flex-col fixed left-0 top-0 w-64 h-screen bg-white/70 dark:bg-[#161c2e]/60 backdrop-blur-xl border-r border-white/60 dark:border-white/10 py-6 px-4 z-40">
             <nav className="flex-1 space-y-1">
-              {sidebarItems.map((item) => (
-                <button
-                  key={item.label}
-                  onClick={() => scrollToSection(item.id)}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-600 dark:text-gray-300 hover:bg-white/60 dark:hover:bg-white/5 hover:text-indigo-600 dark:hover:text-indigo-300 transition-all"
-                >
-                  <span className="text-lg">{item.icon}</span>
-                  {item.label}
-                </button>
-              ))}
+              {sidebarItems.map((item, idx) => {
+                const isActive = idx === 0; // Dashboard highlighted, matches reference image
+                const { Icon } = item;
+                return (
+                  <button
+                    key={item.label}
+                    onClick={() => scrollToSection(item.id)}
+                    className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                      isActive
+                        ? "bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-300"
+                        : "text-gray-600 dark:text-gray-300 hover:bg-white/60 dark:hover:bg-white/5 hover:text-indigo-600 dark:hover:text-indigo-300"
+                    }`}
+                  >
+                    <Icon size={18} strokeWidth={2} />
+                    {item.label}
+                  </button>
+                );
+              })}
             </nav>
 
             <div className="pt-4 mt-4 border-t border-white/40 dark:border-white/10 space-y-1">
               <button className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-600 dark:text-gray-300 hover:bg-white/60 dark:hover:bg-white/5 transition-all">
-                <span className="text-lg">⚙️</span>
+                <SettingsIcon size={18} strokeWidth={2} />
                 Settings
               </button>
               <button
@@ -179,7 +310,7 @@ function AdminDashboard() {
                 }}
                 className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-red-500 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all"
               >
-                <span className="text-lg">🚪</span>
+                <LogOut size={18} strokeWidth={2} />
                 Logout
               </button>
             </div>
@@ -223,7 +354,9 @@ function AdminDashboard() {
                   <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{candidateUsers.length}</p>
                   <p className="text-xs font-semibold text-emerald-500 dark:text-emerald-400 mt-1">↑ 12%</p>
                 </div>
-                <div className="w-11 h-11 rounded-xl bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-300 flex items-center justify-center text-xl">👤</div>
+                <div className="w-11 h-11 rounded-xl bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-300 flex items-center justify-center">
+                  <UsersIcon size={20} strokeWidth={2} />
+                </div>
               </div>
               <Sparkline color="#6366f1" />
             </div>
@@ -235,7 +368,9 @@ function AdminDashboard() {
                   <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{companies.length}</p>
                   <p className="text-xs font-semibold text-emerald-500 dark:text-emerald-400 mt-1">↑ 8%</p>
                 </div>
-                <div className="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-500/15 text-blue-600 dark:text-blue-300 flex items-center justify-center text-xl">🏢</div>
+                <div className="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-500/15 text-blue-600 dark:text-blue-300 flex items-center justify-center">
+                  <Building2 size={20} strokeWidth={2} />
+                </div>
               </div>
               <Sparkline color="#3b82f6" />
             </div>
@@ -247,7 +382,9 @@ function AdminDashboard() {
                   <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{jobs.length}</p>
                   <p className="text-xs font-semibold text-emerald-500 dark:text-emerald-400 mt-1">↑ 18%</p>
                 </div>
-                <div className="w-11 h-11 rounded-xl bg-purple-50 dark:bg-purple-500/15 text-purple-600 dark:text-purple-300 flex items-center justify-center text-xl">💼</div>
+                <div className="w-11 h-11 rounded-xl bg-purple-50 dark:bg-purple-500/15 text-purple-600 dark:text-purple-300 flex items-center justify-center">
+                  <Briefcase size={20} strokeWidth={2} />
+                </div>
               </div>
               <Sparkline color="#a855f7" />
             </div>
@@ -259,7 +396,9 @@ function AdminDashboard() {
                   <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{activeJobs.length}</p>
                   <p className="text-xs font-semibold text-emerald-500 dark:text-emerald-400 mt-1">↑ 24%</p>
                 </div>
-                <div className="w-11 h-11 rounded-xl bg-teal-50 dark:bg-teal-500/15 text-teal-600 dark:text-teal-300 flex items-center justify-center text-xl">📈</div>
+                <div className="w-11 h-11 rounded-xl bg-teal-50 dark:bg-teal-500/15 text-teal-600 dark:text-teal-300 flex items-center justify-center">
+                  <BarChart3 size={20} strokeWidth={2} />
+                </div>
               </div>
               <Sparkline color="#14b8a6" />
             </div>
@@ -269,7 +408,7 @@ function AdminDashboard() {
           <section id="users-section" className="scroll-mt-6 bg-white/70 dark:bg-[#161c2e]/60 backdrop-blur-xl border border-white/60 dark:border-white/10 rounded-2xl shadow-sm mb-6 overflow-hidden">
             <div className="flex items-center justify-between px-5 pt-5 pb-4">
               <h2 className="flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-white">
-                <span className="text-indigo-500">👤</span> Recent Users
+                <UsersIcon size={18} className="text-indigo-500" /> Recent Users
               </h2>
               {candidateUsers.length > 3 && (
                 <button
@@ -299,7 +438,7 @@ function AdminDashboard() {
                       <td className="px-5 py-3">
                         <Link to={`/user/${user._id}`} className="flex items-center gap-3">
                           <div className="relative">
-                            <Avatar 
+                            <Avatar
                             name={user.name}
                             photo={getFileUrl(user.profilePhoto)} />
                             <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-indigo-500 border-2 border-white dark:border-[#161c2e]" />
@@ -319,7 +458,7 @@ function AdminDashboard() {
                             onClick={() => requestDelete("user", user._id, user.name)}
                             className="w-8 h-8 flex items-center justify-center rounded-lg text-red-500 dark:text-red-300 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 transition"
                           >
-                            🗑️
+                            <Trash2 size={16} strokeWidth={2} />
                           </button>
                         </div>
                       </td>
@@ -334,7 +473,7 @@ function AdminDashboard() {
           <section id="companies-section" className="scroll-mt-6 bg-white/70 dark:bg-[#161c2e]/60 backdrop-blur-xl border border-white/60 dark:border-white/10 rounded-2xl shadow-sm mb-6 overflow-hidden">
             <div className="flex items-center justify-between px-5 pt-5 pb-4">
               <h2 className="flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-white">
-                <span className="text-blue-500">🏢</span> Recent Companies
+                <Building2 size={18} className="text-blue-500" /> Recent Companies
               </h2>
               {companies.length > 3 && (
                 <button
@@ -363,7 +502,7 @@ function AdminDashboard() {
                       <td className="px-5 py-3">
                         <Link to={`/company/${company._id}`} className="flex items-center gap-3">
                           <div className="relative">
-                            <Avatar 
+                            <Avatar
                             name={company.companyname}
                             photo={getFileUrl(company.logo)} />
                             <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-blue-500 border-2 border-white dark:border-[#161c2e]" />
@@ -372,7 +511,13 @@ function AdminDashboard() {
                         </Link>
                       </td>
                       <td className="px-5 py-3 text-gray-500 dark:text-gray-400">
-                        {company.location ? `📍 ${company.location}` : "—"}
+                        {company.location ? (
+                          <span className="inline-flex items-center gap-1">
+                            <MapPin size={14} className="text-red-400" /> {company.location}
+                          </span>
+                        ) : (
+                          "—"
+                        )}
                       </td>
                       <td className="px-5 py-3 text-right">
                         <div className="flex justify-end">
@@ -380,7 +525,7 @@ function AdminDashboard() {
                             onClick={() => requestDelete("company", company._id, company.companyname)}
                             className="w-8 h-8 flex items-center justify-center rounded-lg text-red-500 dark:text-red-300 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 transition"
                           >
-                            🗑️
+                            <Trash2 size={16} strokeWidth={2} />
                           </button>
                         </div>
                       </td>
@@ -395,7 +540,7 @@ function AdminDashboard() {
           <section id="jobs-section" className="scroll-mt-6 bg-white/70 dark:bg-[#161c2e]/60 backdrop-blur-xl border border-white/60 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden">
             <div className="flex items-center justify-between px-5 pt-5 pb-4">
               <h2 className="flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-white">
-                <span className="text-teal-500">💼</span> Recent Jobs
+                <Briefcase size={18} className="text-teal-500" /> Recent Jobs
               </h2>
               {jobs.length > 3 && (
                 <button
@@ -446,7 +591,7 @@ function AdminDashboard() {
                               onClick={() => requestDelete("job", job._id, job.title)}
                               className="w-8 h-8 flex items-center justify-center rounded-lg text-red-500 dark:text-red-300 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 transition"
                             >
-                              🗑️
+                              <Trash2 size={16} strokeWidth={2} />
                             </button>
                           </div>
                         </td>
@@ -465,7 +610,9 @@ function AdminDashboard() {
       {confirmTarget && (
         <div className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 px-4">
           <div className="bg-white/70 dark:bg-[#161c2e]/60 backdrop-blur-xl rounded-2xl shadow-2xl p-7 max-w-sm w-full border border-white/20 dark:border-white/10">
-            <div className="w-14 h-14 rounded-full bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-300 flex items-center justify-center text-2xl mx-auto mb-5">⚠️</div>
+            <div className="w-14 h-14 rounded-full bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-300 flex items-center justify-center mx-auto mb-5">
+              <AlertTriangle size={26} strokeWidth={2} />
+            </div>
             <h3 className="text-xl font-bold text-gray-900 dark:text-white text-center mb-2">Are you sure?</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 text-center mb-7 leading-relaxed">
               Do you really want to delete{" "}
