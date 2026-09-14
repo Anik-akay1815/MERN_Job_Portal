@@ -92,7 +92,7 @@ function Footer() {
       </div>
 
       <div className="border-t border-slate-200/70 dark:border-white/10 py-5 text-center text-sm text-slate-400 dark:text-slate-500">
-        © {new Date().getFullYear()} HireNest. All rights reserved.
+        © {new Date().getFullYear()} Careerly. All rights reserved.
       </div>
     </footer>
   );

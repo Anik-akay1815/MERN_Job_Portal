@@ -69,7 +69,7 @@ function LoginUser() {
             <div className="w-full max-w-md">
               <div className="lg:hidden flex items-center gap-3 mb-8">
                 <div className="w-10 h-10 rounded-full bg-linear-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center font-bold">H</div>
-                <div><h1 className="text-xl font-bold text-slate-900 dark:text-white">HireNest</h1><p className="text-xs text-slate-500 dark:text-slate-400">Find • Connect • Grow</p></div>
+                <div><h1 className="text-xl font-bold text-slate-900 dark:text-white">Careerly</h1><p className="text-xs text-slate-500 dark:text-slate-400">Find • Connect • Grow</p></div>
               </div>
 
               <span className="inline-flex bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-400/20 text-xs font-semibold px-3 py-1.5 rounded-full">🔐 Secure Login</span>
