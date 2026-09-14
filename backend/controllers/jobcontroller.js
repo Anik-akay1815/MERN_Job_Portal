@@ -22,17 +22,7 @@ exports.createJob = async (req, res, next) => {
 
 exports.getallJobs = async (req, res, next) => {
   try {
-    const {
-      keyword,
-      location,
-      jobType,
-      experienceLevel,
-      category,
-      skills,
-      page = 1,
-      limit = 6,
-    } = req.query;
-
+    const { keyword, location, jobType, experienceLevel, category, skills, page = 1, limit = 6 } = req.query;
     let query = {};
 
     if (keyword) {
@@ -42,56 +32,35 @@ exports.getallJobs = async (req, res, next) => {
         { skillsRequired: { $regex: keyword, $options: "i" } },
       ];
     }
+    if (location) query.location = { $regex: location, $options: "i" };
+    if (jobType) query.jobType = jobType;
+    if (experienceLevel) query.experienceLevel = experienceLevel;
+    if (category) query.category = { $regex: category, $options: "i" };
 
-    if (location) {
-      query.location = {
-        $regex: location,
-        $options: "i",
-      };
-    }
-
-    if (jobType) {
-      query.jobType = jobType;
-    }
-
-    if (experienceLevel) {
-      query.experienceLevel = experienceLevel;
-    }
-
-    if (category) {
-      query.category = {
-        $regex: category,
-        $options: "i",
-      };
-    }
     if (skills) {
-      const skillList = skills.split(",").map((skill) => skill.trim()).filter(Boolean);
-      if (skillList.length > 0) {
-        query.skillsRequired = {
-          $in: skillList,
-        };
-      }
+      const skillList = skills.split(",").map(skill => skill.trim()).filter(Boolean);
+      if (skillList.length > 0) query.skillsRequired = { $in: skillList };
     }
 
-    const skip = (page - 1) * limit;
-    const totalJobs = await Job.countDocuments(query);
+    const skip = (Number(page) - 1) * Number(limit);
 
-    const allJobs = await Job.find(query)
-      .populate("company", "companyname")
-      .skip(skip)
-      .limit(Number(limit));
-
-    const totalPages = Math.ceil(totalJobs / limit);
+    const [allJobs, totalJobs] = await Promise.all([
+      Job.find(query)
+        .populate("company", "companyname")
+        .skip(skip)
+        .limit(Number(limit))
+        .lean(),
+      Job.countDocuments(query),
+    ]);
 
     res.status(200).json({
       success: true,
       message: "Jobs fetched successfully",
       data: allJobs,
       currentPage: Number(page),
-      totalPages,
+      totalPages: Math.ceil(totalJobs / Number(limit)),
       totalJobs,
     });
-
   } catch (err) {
     res.status(500).json({
       success: false,
@@ -181,7 +150,7 @@ exports.deleteJob = async (req, res, next) => {
 
 exports.getAvailableJobs = async(req,res,next)=>{
   try{
-    const jobs = await Job.find().populate("company");
+    const jobs = await Job.find().populate("company", "companyname").lean();
     res.status(200).json({
       success:true,
       message:"Available jobs",
