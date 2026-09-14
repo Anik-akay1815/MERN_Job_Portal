@@ -68,7 +68,7 @@ function LoginUser() {
           <div className="flex items-center justify-center px-6 py-10 md:px-10 lg:px-12">
             <div className="w-full max-w-md">
               <div className="lg:hidden flex items-center gap-3 mb-8">
-                <div className="w-10 h-10 rounded-full bg-linear-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center font-bold">H</div>
+                <div className="w-10 h-10 rounded-full bg-linear-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center font-bold">C</div>
                 <div><h1 className="text-xl font-bold text-slate-900 dark:text-white">Careerly</h1><p className="text-xs text-slate-500 dark:text-slate-400">Find • Connect • Grow</p></div>
               </div>
 
