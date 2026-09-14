@@ -54,4 +54,10 @@ const jobSchema=mongoose.Schema({
   }
 })
 
+jobSchema.index({ company: 1 });
+jobSchema.index({ jobType: 1 });
+jobSchema.index({ experienceLevel: 1 });
+jobSchema.index({ category: 1 });
+jobSchema.index({ skillsRequired: 1 });
+
 module.exports=mongoose.model('Job',jobSchema);
