@@ -22,7 +22,7 @@ exports.createJob = async (req, res, next) => {
 
 exports.getallJobs = async (req, res, next) => {
   try {
-    const { keyword, location, jobType, experienceLevel, category, skills, page = 1, limit = 6 } = req.query;
+    const { keyword, location, jobType, experienceLevel, category, skills, page = 1, limit = 4 } = req.query;
     let query = {};
 
     if (keyword) {
@@ -32,6 +32,7 @@ exports.getallJobs = async (req, res, next) => {
         { skillsRequired: { $regex: keyword, $options: "i" } },
       ];
     }
+
     if (location) query.location = { $regex: location, $options: "i" };
     if (jobType) query.jobType = jobType;
     if (experienceLevel) query.experienceLevel = experienceLevel;
