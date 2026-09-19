@@ -12,6 +12,7 @@ function UserProfile() {
   const [resumeFile, setResumeFile] = useState(null);
   const [profilePhotoFile, setProfilePhotoFile] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
+  const [showUpdateConfirm, setShowUpdateConfirm] = useState(false);
   const fileInputRef = useRef(null);
   const [formData, setFormData] = useState({
     name: "",
@@ -30,7 +31,6 @@ function UserProfile() {
     const profileUser = res.data.data;
 
     if (profileUser?.role === "admin" && currentUser?.role !== "admin") {
-      alert("Admin profile can only be viewed by an admin.");
       navigate("/");
       return;
     }
@@ -116,6 +116,12 @@ function UserProfile() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setShowUpdateConfirm(true);
+  };
+
+  const handleUpdateProfile = async () => {
+    setShowUpdateConfirm(false);
+
     try {
       const fd = new FormData();
       fd.append("name", formData.name);
@@ -149,7 +155,6 @@ function UserProfile() {
       setResumeFile(null);
       setProfilePhotoFile(null);
       setPhotoPreview(null);
-      alert("Profile updated successfully");
     } catch (err) {
       alert(err.response?.data?.message || "Something went wrong");
     }
@@ -176,14 +181,14 @@ function UserProfile() {
     <>
       <Navbar />
 
-      <div className="min-h-screen bg-gradient-to-br from-[#f5f6fa] via-[#f1efff] to-[#eef2ff] dark:bg-[#0f1420] dark:bg-none px-5 py-10 relative overflow-hidden">
+      <div className="min-h-screen bg-linear-to-br from-[#f5f6fa] via-[#f1efff] to-[#eef2ff] dark:bg-[#0f1420] dark:bg-none px-5 py-10 relative overflow-hidden">
         <div className="absolute -top-32 -right-20 w-96 h-96 bg-purple-400/20 dark:bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="absolute -bottom-40 -left-24 w-96 h-96 bg-blue-400/15 dark:bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative max-w-5xl mx-auto">
           <div className="bg-white/80 dark:bg-[#161c2e]/80 backdrop-blur-xl border border-white/70 dark:border-white/10 rounded-3xl shadow-2xl dark:shadow-black/40 overflow-hidden">
-            <div className="h-1.5 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+            <div className="h-1.5 bg-linear-to-r from-blue-500 via-indigo-500 to-purple-500" />
 
             <div className="p-6 sm:p-8">
               <div className="flex flex-col sm:flex-row sm:items-center gap-5 pb-7 border-b border-slate-200/70 dark:border-white/10">
@@ -200,7 +205,7 @@ function UserProfile() {
                       className="w-24 h-24 rounded-2xl object-cover border border-white/70 dark:border-white/10 shadow-xl"
                     />
                   ) : (
-                    <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center text-3xl font-bold shadow-xl shadow-blue-500/20">
+                    <div className="w-24 h-24 rounded-2xl bg-linear-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center text-3xl font-bold shadow-xl shadow-blue-500/20">
                       {user?.name?.charAt(0).toUpperCase()}
                     </div>
                   )}
@@ -618,6 +623,44 @@ function UserProfile() {
           </div>
         </div>
       </div>
+
+      {showUpdateConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+          <div className="w-full max-w-md rounded-2xl bg-white/95 dark:bg-[#161c2e]/95 backdrop-blur-xl border border-white/70 dark:border-white/10 shadow-2xl p-6">
+            <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 flex items-center justify-center text-blue-500 dark:text-blue-400 mb-4">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+              Update Profile?
+            </h3>
+
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
+              Are you sure you want to save these profile changes?
+            </p>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                type="button"
+                onClick={() => setShowUpdateConfirm(false)}
+                className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-white/5 text-slate-700 dark:text-slate-300 font-semibold hover:bg-slate-100 dark:hover:bg-white/10 transition-all duration-300"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={handleUpdateProfile}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-linear-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold transition-all duration-300"
+              >
+                Update
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

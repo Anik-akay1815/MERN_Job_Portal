@@ -134,6 +134,10 @@ export const deleteApplication = (id) => {
     },
   });
 };
+
+export const getAllApplicationsAdmin = () => {
+  return API.get(`/application/all`);
+};
 export const getDashboard = () => {
   const token = localStorage.getItem("token");
   return API.get('/job/Dashboard', {
@@ -164,6 +168,16 @@ export const getAllJobsAdmin = () => {
 
 export const deleteJobAdmin = (id) => {
   return API.delete(`/admin/jobs/${id}`);
+};
+
+export const addFavourite = (jobId) => {
+  return API.post(`/user/favourite/${jobId}`);
+};
+export const removeFavourite = (jobId) => {
+  return API.delete(`/user/favourite/${jobId}`);
+};
+export const getFavourites = () => {
+  return API.get("/user/favourites");
 };
 
 export default API;

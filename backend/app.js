@@ -1,21 +1,29 @@
+//import express
 const express = require('express');
-require('dotenv').config();
+const app=express();
+app.use(express.json());
+
+//import cors
+const cors = require('cors');
+app.use(cors());
+
+//establish redis connection
+const redis = require('./config/redis');
+
+//establish db connection
 const mongoose=require('mongoose');
+require('dotenv').config();
 const connectDB=require('./config/db');
+connectDB();
+const PORT=process.env.PORT;
+
+//import routers
 const userRouter = require('./routes/userRouter');
 const companyRouter = require('./routes/companyRouter');
 const jobRouter=require('./routes/jobrouter');
 const applicationRouter = require("./routes/applicationRouter");
 const adminRouter = require('./routes/adminRouter');
-const cors = require('cors');
 
-
-const app=express();
-app.use(express.json());
-app.use(cors());
-
-connectDB();
-const PORT=process.env.PORT;
 
 app.use('/user',userRouter);
 app.use('/company',companyRouter);

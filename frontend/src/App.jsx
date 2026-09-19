@@ -1,21 +1,31 @@
 import {Routes, Route} from "react-router-dom"
+
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
+
+//guest
 import Home from './pages/Home.jsx';
 import Login from './pages/Login.jsx'
-import Register from './pages/Register.jsx'
-import Jobs from './pages/Jobs.jsx'
-import CompanyRegister from './pages/CompanyRegister.jsx'
-import ProtectedRoute from "./components/ProtectedRoute.jsx";
-import Dashboard from "./pages/Dashboard.jsx";
+import Register from './pages/Register.jsx';
+import CompanyRegister from './pages/CompanyRegister.jsx';
+import Companies from "./pages/Companies.jsx";
+import JobDetail from './pages/JobDetail.jsx';
+
+//candidates
+import Jobs from './pages/Jobs.jsx';
 import UserProfile from "./pages/UserProfile.jsx";
 import MyApplications from "./pages/MyApplications.jsx";
+import UserDashboard from "./pages/UserDashboard.jsx";
+import FavouriteJobs from "./pages/Favourites.jsx"
+
+//companies
+import Dashboard from "./pages/Dashboard.jsx";
 import MyJobs from "./pages/MyJobs.jsx";
 import PostJobs  from "./pages/PostJobs.jsx";
 import CompanyProfile from "./pages/CompanyProfile.jsx";
-import JobDetail from './pages/JobDetail.jsx';
 import Applicants from "./pages/Applicants.jsx";
+
+//admin
 import AdminDashboard from "./pages/AdminDashboard.jsx";
-import Companies from "./pages/Companies.jsx";
-import UserDashboard from "./pages/UserDashboard.jsx";
 
 function App(){
   return(
@@ -37,6 +47,7 @@ function App(){
         <Route path='/userprofile' element={<ProtectedRoute allowedRole={['user', 'admin']}><UserProfile/></ProtectedRoute>}/>{/* user access */}
         <Route path="/myapplications" element={<ProtectedRoute allowedRole='user'><MyApplications/></ProtectedRoute>}/>
         <Route path="/userdashboard" element={<ProtectedRoute allowedRole='user'><UserDashboard/></ProtectedRoute>}/>
+        <Route path="/favourites" element={<ProtectedRoute allowedRole="user"><FavouriteJobs /></ProtectedRoute>} />
 
         <Route path='/user/:id' element={<ProtectedRoute allowedRole={['company', 'admin']}><UserProfile/></ProtectedRoute>}/>{/* company and admin access */}
 

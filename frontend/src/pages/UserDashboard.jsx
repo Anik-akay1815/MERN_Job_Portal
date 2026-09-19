@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar.jsx";
@@ -50,7 +51,6 @@ function UserDashboard() {
       await deleteApplication(deleteId);
       setApplications((prev) => prev.filter((app) => app._id !== deleteId));
       setDeleteId(null);
-      alert("Application withdrawn successfully");
     } catch (err) {
       alert(err.response?.data?.message || "Something went wrong");
     } finally {
@@ -150,6 +150,11 @@ function UserDashboard() {
                 <span className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center">▤</span>
                 Applications
               </a>
+
+              <Link to="/favourites" className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-white/80 dark:hover:bg-white/5 transition text-sm font-medium">
+                <span className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center">♡</span>
+                Favourites
+              </Link>
             </nav>
 
             <div className="mt-auto p-4">

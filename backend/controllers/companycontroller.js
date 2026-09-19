@@ -1,15 +1,19 @@
-const Company=require("../models/company");
-const bcrypt = require('bcryptjs')
-const jwt = require('jsonwebtoken');
-const Job = require('../models/job');
+const Company = require("../models/company");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const Job = require("../models/job");
+
+const { deleteCacheByPattern, getCache, setCache } = require("../utils/redisCache");
 
 exports.register = async (req, res, next) => {
   try {
-    const {password} = req.body;
-    const hashedPassword= await bcrypt.hash(password,12);
-    req.body.password=hashedPassword;
+    const { password } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 12);
+    req.body.password = hashedPassword;
 
     const companydata = await Company.create(req.body);
+
+    await deleteCacheByPattern("/companies:*");
     res.json({
       success: true,
       message: "Company data registered",
@@ -32,41 +36,56 @@ exports.login = async (req, res, next) => {
       message: "Company does not exists",
     });
   }
-  const isMatch=await bcrypt.compare(password,company.password);
+  const isMatch = await bcrypt.compare(password, company.password);
   if (!isMatch) {
     return res.status(401).json({
       success: false,
       message: "Incorrect Credentials",
     });
   }
-  const token=jwt.sign({
-      id:company._id,
-      role:company.role
+  const token = jwt.sign(
+    {
+      id: company._id,
+      role: company.role,
     },
     process.env.JWT_SECRET,
     {
-      expiresIn:'7d'
-    }
-  )
+      expiresIn: "7d",
+    },
+  );
   res.status(200).json({
     success: true,
     message: "Company Login successful",
     token,
     data: {
-      _id:company._id,
-      companyname:company.companyname,
-      email:company.email,
-      location:company.location,
-      description:company.description,
-      role:company.role
+      _id: company._id,
+      companyname: company.companyname,
+      email: company.email,
+      location: company.location,
+      description: company.description,
+      role: company.role,
     },
   });
 };
 
-
 exports.getallCompany = async (req, res, next) => {
   try {
-    const allCompanies = await Company.find().select("-password");;
+
+    const cacheKey = "/companies:all";
+    const cachedData = await getCache(cacheKey);
+
+    if (cachedData) {
+      return res.status(200).json({
+        success: true,
+        message: "All registered Companies",
+        data: JSON.parse(cachedData),
+      });
+    }
+
+    const allCompanies = await Company.find().select("-password");
+
+    await setCache(cacheKey, allCompanies, 240);
+
     res.status(200).json({
       success: true,
       message: "All registered Companies",
@@ -83,18 +102,39 @@ exports.getallCompany = async (req, res, next) => {
 exports.getbyID = async (req, res, next) => {
   try {
     const id = req.params.id;
-    const company = await Company.findById(id).select("-password");;
-    const jobs = await Job.find({company:id});
+
+    const cacheKey = `/companies:${id}`;
+    const cachedData = await getCache(cacheKey);
+
+    if (cachedData) {
+      return res.status(200).json({
+        success: true,
+        message: "Company found",
+        data: JSON.parse(cachedData),
+      });
+    }
+    const company = await Company.findById(id).select("-password");
+
     if (!company) {
       return res.status(404).json({
         success: false,
         message: "Company does not Exists",
       });
     }
+
+    const jobs = await Job.find({ company: id });
+
+    const cacheData = {
+      company,
+      jobs,
+    };
+
+    await setCache(cacheKey, cacheData, 240);
+
     res.status(200).json({
       success: true,
       message: "Company found",
-      data: {company,jobs}
+      data: cacheData,
     });
   } catch (err) {
     res.status(500).json({
@@ -126,6 +166,9 @@ exports.updateCompany = async (req, res, next) => {
       message: "Company not found",
     });
   }
+
+  await deleteCacheByPattern("/companies:*");
+
   res.status(200).json({
     success: true,
     message: "Company updated",
@@ -143,6 +186,9 @@ exports.deleteCompany = async (req, res, next) => {
         message: "Company not found",
       });
     }
+
+    await deleteCacheByPattern("/companies:*");
+
     res.status(200).json({
       success: true,
       message: "Company deleted successfully",

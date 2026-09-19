@@ -2,6 +2,8 @@ const User = require("../models/user");
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
+const { deleteCacheByPattern, getCache, setCache } = require("../utils/redisCache");
+
 exports.register = async (req, res, next) => {
   try {
     const {password} = req.body;
@@ -9,6 +11,9 @@ exports.register = async (req, res, next) => {
     req.body.password=hashedPassword;
 
     const userdata = await User.create(req.body);
+
+    await deleteCacheByPattern("/users:*");
+
     res.json({
       success: true,
       message: "User registered successfully",
@@ -78,7 +83,22 @@ exports.login = async (req, res, next) => {
 
 exports.getallusers = async (req, res, next) => {
   try {
-    const allUsers = await User.find().select("-password");;
+    const cacheKey = "/users:all";
+
+    const cachedData = await getCache(cacheKey);
+
+    if (cachedData) {
+      return res.status(200).json({
+        success: true,
+        message: "All registered users",
+        data: JSON.parse(cachedData),
+      });
+    }
+
+    const allUsers = await User.find().select("-password");
+
+    await setCache(cacheKey, allUsers, 240);
+
     res.status(200).json({
       success: true,
       message: "All registered users",
@@ -95,13 +115,31 @@ exports.getallusers = async (req, res, next) => {
 exports.getbyID = async (req, res, next) => {
   try {
     const id = req.params.id;
-    const user = await User.findById(id).select("-password");;
+
+    const cacheKey = `/users:${id}`;
+
+    const cachedData = await getCache(cacheKey);
+
+    if (cachedData) {
+
+      return res.status(200).json({
+        success: true,
+        message: "User found",
+        data: JSON.parse(cachedData),
+      });
+    }
+
+    const user = await User.findById(id).select("-password");
+
     if (!user) {
       return res.status(404).json({
         success: false,
         message: "User does not Exists",
       });
     }
+
+    await setCache(cacheKey, user, 240);
+
     res.status(200).json({
       success: true,
       message: "User found",
@@ -144,6 +182,9 @@ exports.updateUser = async (req, res, next) => {
       message: "User not found",
     });
   }
+
+  await deleteCacheByPattern("/users:*");
+
   res.status(200).json({
     success: true,
     message: "User updated",
@@ -161,6 +202,9 @@ exports.deleteUser = async (req, res, next) => {
         message: "User not found",
       });
     }
+
+    await deleteCacheByPattern("/users:*");
+
     res.status(200).json({
       success: true,
       message: "User deleted successfully",

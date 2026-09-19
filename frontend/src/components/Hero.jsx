@@ -176,17 +176,8 @@ function Hero() {
                 src={heroGirl}
                 alt="Professional woman"
                 className="w-65 md:w-75 lg:w-6xl
-                  h-auto object-contain drop-shadow-2xl"
+                  h-auto object-contain drop-shadow-2xl "
               />
-
-              <div className="absolute top-8 -right-8
-                text-blue-600 dark:text-[#7cc2f2]
-                text-lg font-medium rotate-[-8deg]">
-                <span className="block">Better</span>
-                <span className="block">Careers</span>
-                <span className="block">Brighter</span>
-                <span className="block">Futures</span>
-              </div>
             </div>
           </div>
 

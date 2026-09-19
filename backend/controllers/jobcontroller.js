@@ -1,11 +1,22 @@
 const Job = require("../models/job");
-const Application = require('../models/application')
+const Application = require("../models/application");
+const { JsonWebTokenError } = require("jsonwebtoken");
+
+const {
+  deleteCacheByPattern,
+  getCache,
+  setCache,
+} = require("../utils/redisCache");
 
 exports.createJob = async (req, res, next) => {
   try {
     const companyId = req.user.id;
-    req.body.company=companyId;
+    req.body.company = companyId;
     const jobData = await Job.create(req.body);
+
+    await deleteCacheByPattern("/jobs:*");
+    await deleteCacheByPattern("/companies:*");
+
     res.json({
       success: true,
       message: "Job Created Successfully",
@@ -22,7 +33,17 @@ exports.createJob = async (req, res, next) => {
 
 exports.getallJobs = async (req, res, next) => {
   try {
-    const { keyword, location, jobType, experienceLevel, category, skills, page = 1, limit = 6 } = req.query;
+    const {
+      keyword,
+      location,
+      jobType,
+      experienceLevel,
+      category,
+      skills,
+      page = 1,
+      limit = 6,
+    } = req.query;
+
     let query = {};
 
     if (keyword) {
@@ -39,12 +60,40 @@ exports.getallJobs = async (req, res, next) => {
     if (category) query.category = { $regex: category, $options: "i" };
 
     if (skills) {
-      const skillList = skills.split(",").map(skill => skill.trim()).filter(Boolean);
+      const skillList = skills
+        .split(",")
+        .map((skill) => skill.trim())
+        .filter(Boolean);
       if (skillList.length > 0) query.skillsRequired = { $in: skillList };
     }
 
-    const skip = (Number(page) - 1) * Number(limit);
+    const cacheKey = `/jobs:${JSON.stringify({
+      keyword,
+      location,
+      jobType,
+      experienceLevel,
+      category,
+      skills,
+      page,
+      limit,
+    })}`;
 
+    const cachedData = await getCache(cacheKey);
+
+    if (cachedData) {
+      const parsedData = JSON.parse(cachedData);
+
+      return res.json({
+        success: true,
+        message: "Jobs fetched from cache",
+        data: parsedData.allJobs,
+        currentPage: parsedData.currentPage,
+        totalPages: parsedData.totalPages,
+        totalJobs: parsedData.totalJobs,
+      });
+    }
+
+    const skip = (Number(page) - 1) * Number(limit);
     const [allJobs, totalJobs] = await Promise.all([
       Job.find(query)
         .populate("company", "companyname")
@@ -53,6 +102,15 @@ exports.getallJobs = async (req, res, next) => {
         .lean(),
       Job.countDocuments(query),
     ]);
+
+    //cache miss
+    const cacheData = {
+      allJobs,
+      totalJobs,
+      currentPage: Number(page),
+      totalPages: Math.ceil(totalJobs / Number(limit)),
+    };
+    await setCache(cacheKey, cacheData, 240);
 
     res.status(200).json({
       success: true,
@@ -74,7 +132,7 @@ exports.getallJobs = async (req, res, next) => {
 exports.getJobByID = async (req, res, next) => {
   try {
     const id = req.params.id;
-    const jobData = await Job.findById(id).populate('company','companyname');
+    const jobData = await Job.findById(id).populate("company", "companyname");
     if (!jobData) {
       return res.status(404).json({
         success: false,
@@ -98,20 +156,21 @@ exports.updateJob = async (req, res, next) => {
   try {
     const id = req.params.id;
     const data = req.body;
-    const updatedJob = await Job.findByIdAndUpdate(
-      id,
-      data,
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
+    const updatedJob = await Job.findByIdAndUpdate(id, data, {
+      new: true,
+      runValidators: true,
+    });
+
     if (!updatedJob) {
       return res.status(404).json({
         success: false,
         message: "Job not found",
       });
     }
+    // Invalidate jobs cache
+    await deleteCacheByPattern("/jobs:*");
+    await deleteCacheByPattern("/companies:*");
+
     res.status(200).json({
       success: true,
       message: "Job updated",
@@ -130,12 +189,17 @@ exports.deleteJob = async (req, res, next) => {
   try {
     const id = req.params.id;
     const deleteJob = await Job.findByIdAndDelete(id);
+
     if (!deleteJob) {
       return res.status(404).json({
         success: false,
         message: "Job not found",
       });
     }
+    // Invalidate jobs cache
+    await deleteCacheByPattern("/jobs:*");
+    await deleteCacheByPattern("/companies:*");
+
     res.status(200).json({
       success: true,
       message: "Job deleted successfully",
@@ -149,48 +213,59 @@ exports.deleteJob = async (req, res, next) => {
   }
 };
 
-exports.getAvailableJobs = async(req,res,next)=>{
-  try{
+exports.getAvailableJobs = async (req, res, next) => {
+  try {
     const jobs = await Job.find().populate("company", "companyname").lean();
     res.status(200).json({
-      success:true,
-      message:"Available jobs",
-      data:jobs
-    })
-  }catch(err){
+      success: true,
+      message: "Available jobs",
+      data: jobs,
+    });
+  } catch (err) {
     res.status(500).json({
       success: false,
       message: "Error Finding Job",
     });
   }
-}
+};
 
-exports.getDashboard = async(req,res,next)=>{
-  try{
-    const jobs = await Job.find({company:req.user.id});
-    const totalJobs=jobs.length;
+exports.getDashboard = async (req, res, next) => {
+  try {
+    const jobs = await Job.find({ company: req.user.id });
+    const totalJobs = jobs.length;
 
-    const jobIds = jobs.map(job=>job._id);
+    const jobIds = jobs.map((job) => job._id);
 
-    const applications= await Application.find({job:{$in:jobIds}});
+    const applications = await Application.find({ job: { $in: jobIds } });
     const totalApplications = applications.length;
 
-    const accepted = applications.filter(app=>app.status ==='Accepted').length;
-    const rejected = applications.filter(app=>app.status ==='Rejected').length;
-    const pending = applications.filter(app=>app.status ==='Pending').length;
+    const accepted = applications.filter(
+      (app) => app.status === "Accepted",
+    ).length;
+    const rejected = applications.filter(
+      (app) => app.status === "Rejected",
+    ).length;
+    const pending = applications.filter(
+      (app) => app.status === "Pending",
+    ).length;
 
     const recentJobs = jobs.slice(-5).reverse();
 
     res.status(200).json({
-      success:true,
-      data:{
-        totalJobs,totalApplications,accepted,rejected,pending,recentJobs
-      }
-    })
-  }catch(err){
+      success: true,
+      data: {
+        totalJobs,
+        totalApplications,
+        accepted,
+        rejected,
+        pending,
+        recentJobs,
+      },
+    });
+  } catch (err) {
     res.status(500).json({
       success: false,
       message: err.message,
     });
   }
-}
+};

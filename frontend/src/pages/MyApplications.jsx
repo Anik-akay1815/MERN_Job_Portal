@@ -7,6 +7,7 @@ import {
 
 function MyApplications() {
   const [applications, setApplications] = useState([]);
+  const [withdrawId, setWithdrawId] = useState(null);
 
   const fetchApplications = async () => {
     try {
@@ -23,10 +24,12 @@ function MyApplications() {
     fetchApplications();
   }, []);
 
-  const handleWithdraw = async (id) => {
+  const handleWithdraw = async () => {
+    if (!withdrawId) return;
+
     try {
-      await deleteApplication(id);
-      alert("Application Withdrawn successfully");
+      await deleteApplication(withdrawId);
+      setWithdrawId(null);
       fetchApplications();
     } catch (err) {
       alert(err.response?.data?.message || "Something went wrong");
@@ -181,7 +184,7 @@ function MyApplications() {
 
                         <button
                           className="w-full bg-white/80 dark:bg-white/5 border border-red-200 dark:border-red-500/20 text-red-500 dark:text-red-400 px-4 py-2.5 rounded-xl hover:bg-red-50 dark:hover:bg-red-500/10 transition-all duration-300 font-semibold"
-                          onClick={() => handleWithdraw(app._id)}
+                          onClick={() => setWithdrawId(app._id)}
                         >
                           Withdraw Application
                         </button>
@@ -196,6 +199,45 @@ function MyApplications() {
           </div>
         </div>
       </div>
+
+      {/* Withdraw Confirmation Modal */}
+      {withdrawId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+          <div className="w-full max-w-md rounded-2xl bg-white/95 dark:bg-[#161c2e]/95 backdrop-blur-xl border border-white/70 dark:border-white/10 shadow-2xl p-6">
+
+            <div className="w-12 h-12 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 flex items-center justify-center text-red-500 dark:text-red-400 mb-4">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v4m0 4h.01M5.07 19h13.86a2 2 0 001.73-2.6L13.73 4.6a2 2 0 00-3.46 0L3.34 16.4A2 2 0 005.07 19z" />
+              </svg>
+            </div>
+
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+              Withdraw Application?
+            </h3>
+
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
+              Are you sure you want to withdraw this application? This action cannot be undone.
+            </p>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setWithdrawId(null)}
+                className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-white/5 text-slate-700 dark:text-slate-300 font-semibold hover:bg-slate-100 dark:hover:bg-white/10 transition-all duration-300"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={handleWithdraw}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white font-semibold transition-all duration-300"
+              >
+                Withdraw
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
     </>
   );
 }

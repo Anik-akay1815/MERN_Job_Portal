@@ -15,6 +15,6 @@ applicationRouter.get('/user/:userId',verifyToken,authorizeRole("user"),applicat
 
 applicationRouter.get('/:id',applicationController.getApplicationByID);
 applicationRouter.put('/:id',verifyToken,authorizeRole("company"),applicationController.updateApplication);
-applicationRouter.delete('/:id',verifyToken,authorizeRole("user"),applicationController.deleteApplication);
+applicationRouter.delete('/:id', verifyToken, authorizeRole("user", "admin"), applicationController.deleteApplication);
 
 module.exports = applicationRouter;
