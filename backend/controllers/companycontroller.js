@@ -2,6 +2,8 @@ const Company = require("../models/company");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Job = require("../models/job");
+const fs = require("fs");
+const path = require("path");
 
 const { deleteCacheByPattern, getCache, setCache } = require("../utils/redisCache");
 
@@ -145,35 +147,57 @@ exports.getbyID = async (req, res, next) => {
 };
 
 exports.updateCompany = async (req, res, next) => {
-  const id = req.params.id;
-  const data = req.body;
+  try {
+    const id = req.params.id;
+    const data = { ...req.body };
 
-  if (data.password) {
-    data.password = await bcrypt.hash(data.password, 12);
-  } else {
-    delete data.password;
-  }
-  if (req.files?.logo) {
-    data.logo = req.files.logo[0].path;
-  }
-  const updatedCompany = await Company.findByIdAndUpdate(id, data, {
-    new: true,
-    runValidators: true,
-  });
-  if (!updatedCompany) {
-    return res.status(404).json({
-      success: false,
-      message: "Company not found",
+    const existingCompany = await Company.findById(id);
+
+    if (!existingCompany) {
+      return res.status(404).json({
+        success: false,
+        message: "Company not found",
+      });
+    }
+
+    if (data.password) {
+      data.password = await bcrypt.hash(data.password, 12);
+    } else {
+      delete data.password;
+    }
+
+    let oldLogo = null;
+
+    if (req.files?.logo) {
+      oldLogo = existingCompany.logo;
+      data.logo = req.files.logo[0].path;
+    }
+
+    const updatedCompany = await Company.findByIdAndUpdate(id, data, {
+      new: true,
+      runValidators: true,
     });
+
+    if (oldLogo) {
+      const oldPath = path.isAbsolute(oldLogo)
+        ? oldLogo
+        : path.join(process.cwd(), oldLogo);
+
+      if (fs.existsSync(oldPath)) {
+        fs.unlinkSync(oldPath);
+      }
+    }
+
+    await deleteCacheByPattern("/companies:*");
+
+    res.status(200).json({
+      success: true,
+      message: "Company updated",
+      data: updatedCompany,
+    });
+  } catch (err) {
+    next(err);
   }
-
-  await deleteCacheByPattern("/companies:*");
-
-  res.status(200).json({
-    success: true,
-    message: "Company updated",
-    data: updatedCompany,
-  });
 };
 
 exports.deleteCompany = async (req, res, next) => {

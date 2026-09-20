@@ -1,6 +1,8 @@
 const User = require("../models/user");
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const fs = require("fs");
+const path = require("path");
 
 const { deleteCacheByPattern, getCache, setCache } = require("../utils/redisCache");
 
@@ -154,42 +156,81 @@ exports.getbyID = async (req, res, next) => {
 };
 
 exports.updateUser = async (req, res, next) => {
-  const id = req.params.id;
-  const data = {...req.body};
+  try {
+    const id = req.params.id;
 
-  if (data.password) {
-    data.password = await bcrypt.hash(data.password, 12);
-  }
-  if (req.files?.resume) {
-    data.resume = req.files.resume[0].path;
-  }
-  if (req.files?.profilePhoto) {
-    data.profilePhoto = req.files.profilePhoto[0].path;
-  }
-  if (data.skills) {
-    data.skills = JSON.parse(data.skills);
-  }
-  if (data.experience) {
-    data.experience = JSON.parse(data.experience);
-  }
-  const updatedUser = await User.findByIdAndUpdate(id, data, {
-    new: true,
-    runValidators: true,
-  });
-  if (!updatedUser) {
-    return res.status(404).json({
-      success: false,
-      message: "User not found",
+    const existingUser = await User.findById(id);
+
+    if (!existingUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const data = { ...req.body };
+
+    let oldProfilePhoto = null;
+    let oldResume = null;
+
+    if (data.password) {
+      data.password = await bcrypt.hash(data.password, 12);
+    } else {
+      delete data.password;
+    }
+    if (req.files?.profilePhoto) {
+      oldProfilePhoto = existingUser.profilePhoto;
+      data.profilePhoto = req.files.profilePhoto[0].path;
+    }
+    if (req.files?.resume) {
+      oldResume = existingUser.resume;
+      data.resume = req.files.resume[0].path;
+    }
+    if (data.skills) {
+      data.skills = JSON.parse(data.skills);
+    }
+    if (data.experience) {
+      data.experience = JSON.parse(data.experience);
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      data,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+    if (oldProfilePhoto && oldProfilePhoto !== data.profilePhoto) {
+      const oldPath = path.isAbsolute(oldProfilePhoto)
+        ? oldProfilePhoto
+        : path.join(process.cwd(), oldProfilePhoto);
+
+      if (fs.existsSync(oldPath)) {
+        fs.unlinkSync(oldPath);
+      }
+    }
+    if (oldResume && oldResume !== data.resume) {
+      const oldPath = path.isAbsolute(oldResume)
+        ? oldResume
+        : path.join(process.cwd(), oldResume);
+
+      if (fs.existsSync(oldPath)) {
+        fs.unlinkSync(oldPath);
+      }
+    }
+
+    await deleteCacheByPattern("/users:*");
+
+    res.status(200).json({
+      success: true,
+      message: "User updated",
+      data: updatedUser,
     });
+
+  } catch (err) {
+    next(err);
   }
-
-  await deleteCacheByPattern("/users:*");
-
-  res.status(200).json({
-    success: true,
-    message: "User updated",
-    data: updatedUser,
-  });
 };
 
 exports.deleteUser = async (req, res, next) => {
