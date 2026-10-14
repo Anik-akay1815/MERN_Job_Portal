@@ -2,11 +2,7 @@ const Job = require("../models/job");
 const Application = require("../models/application");
 const { JsonWebTokenError } = require("jsonwebtoken");
 
-const {
-  deleteCacheByPattern,
-  getCache,
-  setCache,
-} = require("../utils/redisCache");
+const { getCache, setCache, deleteCacheByPattern, acquireLock, releaseLock } = require("../utils/redisCache");
 
 exports.createJob = async (req, res, next) => {
   try {
@@ -64,7 +60,10 @@ exports.getallJobs = async (req, res, next) => {
         .split(",")
         .map((skill) => skill.trim())
         .filter(Boolean);
-      if (skillList.length > 0) query.skillsRequired = { $in: skillList };
+
+      if (skillList.length > 0) {
+        query.skillsRequired = { $in: skillList };
+      }
     }
 
     const cacheKey = `/jobs:${JSON.stringify({
@@ -93,7 +92,33 @@ exports.getallJobs = async (req, res, next) => {
       });
     }
 
+    const lockKey = `${cacheKey}:lock`;
+    const lockToken = `${Date.now()}-${Math.random()}`;
+
+    const lockAcquired = await acquireLock(lockKey, lockToken, 10);
+
+    if (!lockAcquired) {
+      for (let i = 0; i < 20; i++) {
+        await new Promise((resolve) => setTimeout(resolve, 50));
+
+        const retryCache = await getCache(cacheKey);
+
+        if (retryCache) {
+          const parsedData = JSON.parse(retryCache);
+
+          return res.json({
+            success: true,
+            message: "Jobs fetched from cache",
+            data: parsedData.allJobs,
+            currentPage: parsedData.currentPage,
+            totalPages: parsedData.totalPages,
+            totalJobs: parsedData.totalJobs,
+          });
+        }
+      }
+    }
     const skip = (Number(page) - 1) * Number(limit);
+
     const [allJobs, totalJobs] = await Promise.all([
       Job.find(query)
         .populate("company", "companyname")
@@ -103,14 +128,18 @@ exports.getallJobs = async (req, res, next) => {
       Job.countDocuments(query),
     ]);
 
-    //cache miss
     const cacheData = {
       allJobs,
       totalJobs,
       currentPage: Number(page),
       totalPages: Math.ceil(totalJobs / Number(limit)),
     };
+
     await setCache(cacheKey, cacheData, 240);
+
+    if (lockAcquired) {
+      await releaseLock(lockKey, lockToken);
+    }
 
     res.status(200).json({
       success: true,

@@ -11,7 +11,6 @@ userRouter.post("/login", usercontroller.login);
 
 userRouter.get("/all", usercontroller.getallusers);
 
-/* FAVOURITES — must come before /:id */
 userRouter.post("/favourite/:jobId", verifyToken, authorizeRole("user"), favouritecontroller.addFavourite);
 userRouter.delete("/favourite/:jobId", verifyToken, authorizeRole("user"), favouritecontroller.removeFavourite);
 userRouter.get("/favourites", verifyToken, authorizeRole("user"), favouritecontroller.getFavourites);
